@@ -1,0 +1,9 @@
+Dependencies:
+-numpy
+-matplotlib
+-astropy
+-pandas
+-astroquery
+-rich
+-pylatex
+-ephem
