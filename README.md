@@ -16,11 +16,11 @@ It will create:
 
 ## Dependencies:
 
-*numpy
-*matplotlib
-*astropy
-*pandas
-*astroquery
-*rich
-*pylatex
-*ephem
+* numpy
+* matplotlib
+* astropy
+* pandas
+* astroquery
+* rich
+* pylatex
+* ephem
