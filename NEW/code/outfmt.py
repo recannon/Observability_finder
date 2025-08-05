@@ -16,9 +16,7 @@ custom_theme = Theme({
     'logging.level.warning': 'yellow',
     'logging.level.error': 'bold red',
     'logging.level.critical': 'bold white on red',
-    
-    'logging.level.customlevel': 'bold pink on purple'
-})
+    })
 
 console = Console(theme=custom_theme)
 
