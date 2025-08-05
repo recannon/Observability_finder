@@ -17,7 +17,7 @@ DEFAULT_TIME_VISIBLE    = 1      # Minimum time visible (hours)
 DEFAULT_MAG_LIMIT       = 25     # Maximum magnitude limit
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     '''Parse command-line arguments.'''
     parser = argparse.ArgumentParser(description='',
                                      epilog='')
