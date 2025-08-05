@@ -2,10 +2,26 @@ import argparse
 import logging
 from .outfmt import logger
 from pathlib import Path
+import numpy as np
+import pandas as pd
+from astropy.coordinates import SkyCoord
+from astropy.time import Time, TimeDelta
+import astropy.units as u
+from astroquery.jplhorizons import Horizons
+from astroquery.mpc import MPC as MPC_query
+from rich.progress import Progress
+from observability_funcs import twilight_times, figures, pdfs
+from observability_funcs.outfmt import console, logger, error_exit
 
-DEFAULT_MPC_CODE = '809'
+
+# Configure default parameters
 DEFAULT_TARGET_FILE = './target_list.txt'
 DEFAULT_OUTPUT_CSV = './output.csv'
+DEFAULT_MPC_CODE = '809'         #Observatory MPC code
+DEFAULT_ELEVATION_LIMIT = 30     #Minimum elevation angle (degrees)
+DEFAULT_TIME_VISIBLE = 1         #Minimum time visible (hours)
+DEFAULT_MAG_LIMIT = 25           #Maximum magnitude limit
+
 
 def parse_args():
     '''Parse command-line arguments.'''
@@ -34,23 +50,108 @@ def parse_args():
 
     limit_group = parser.add_argument_group('Optional inputs for limits')
     limit_group.add_argument_group('-mag', '--mag-limit', type=str,
-                                   help='Upper limit of magnitude to be classed as visible [float]')
+                                   help=f'Upper limit of magnitude to be classed as visible [float]. Defautlt: {DEFAULT_MAG_LIMIT}')
     limit_group.add_argument_group('-elv', '--elevation', type=str,
-                                   help='Minimum elevation to be observable [float]')
+                                   help=f'Minimum elevation to be observable [float]. Default: {DEFAULT_ELEVATION_LIMIT}')
+    limit_group.add_argument_group('-air', '--airmass', type=str,
+                                   help=f'Maximum airmass to be observable [float]. Use this only if no elevation is specified.')
     limit_group.add_argument_group('-tvis', '--time-visible', type=str,
-                                   help='Minimum time visible per night to be included in observable list [float]')
+                                   help=f'Minimum time visible per night to be included in observable list [float]. Default: {DEFAULT_TIME_VISIBLE}')
     
     return parser.parse_args()
 
-def validate_args(args):
-    
-    if args.verbose:
-        logger.setLevel(logging.debug)
 
+def check_type(name:str, val:str, req_type:type):
+    '''
+    '''
+    try: 
+        val = req_type(val)
+    except:
+        error_exit(f'{name} value cannot be read into a {req_type}')
+    return val
+
+
+def validate_args(args):
+    '''
+    '''
+    # Check verbose
+    if args.verbose:
+        logger.setLevel(logging.DEBUG)
+        logger.debug('Verbose: Set level to DEBUG')
+
+    # Check dates format
+    try:
+        args.start_date = Time(args.start_date, format='iso')
+        args.end_date   = Time(args.end_date, format='iso')
+    except:
+        error_exit('Cannot convert dates to astropy.time.Time objects. Check time input')
+
+    # Check mag and apply default value if none
+    if not args.mag_limit:
+        args.mag_limit = DEFAULT_MAG_LIMIT
+    else:
+        args.mag_limit = check_type('--mag-limit', args.mag_limit, float)
+
+    # Check time and apply default value if none
+    if not args.time_visible:
+        args.time_visible = DEFAULT_TIME_VISIBLE
+    else:
+        args.time_visible = check_type('--time-visible', args.time_visible, float)
+        if args.time_visible <= 0:
+            error_exit('--time-visible must be positive') 
+
+    # Check airmass/elevation
+    if not args.airmass_limit and not args.elevation_limit:
+        args.elevation_limit = DEFAULT_ELEVATION_LIMIT
+    elif args.airmass_limit and args.elevation_limit:
+        error_exit('Cannot accept separate limits for airmass and elevation')        
+    elif args.elevation_limit:
+        args.elevation_limit = check_type('--elevation-limit', args.elevation_limit, float)
+        if args.elevation_limit < 0:
+            error_exit('--elevation-limit must be positive')
+        # To avoid dividing by 0
+        elif args.elevation_limit == 0:
+            args.elevation_limit == 0.001 
+    elif args.airmass_limit:
+        args.airmass_limit = check_type('--airmass-liimit', args.airmass_limit, float)
+        if args.airmass_limit < 1:
+            error_exit('--airmass-limit must be greater than 1')
+        args.elevation_limit = 90 - np.rad2deg(np.arccos(1 / args.airmass_limit))
+        logger.debug(f'Elevation limit set to {args.elevation_limit:.2f} degrees')
+    else:
+        error_exit('This message should not appear so it is time to cry')
+
+    # Check MPC codes
+    if not args.mpc_code:
+        args.mpc_code = DEFAULT_MPC_CODE
+    elif len(args.mpc_code) != 3:
+        error_exit('Input MPC code does not have 3 characters')
+
+    obs_sites = MPC_query.get_observatory_codes()
+    logger.info(f"Selected observatory: {obs_sites[obs_sites['Code']==args.mpc_code]['Name'].value[0]}")
+
+    # Check if input file exists
+    if not args.target_list.isfile:
+        error_exit(f'Cannot find {args.target_list}')
     return args
 
+
 def read_target_list(fname):
+    '''
+    Read input target list file.
+    fname : input file (Path)
+    ----
+    Return : target list (array)
+
+    '''
+    with open(fname,'r') as f:
+        # read all targets in file avoiding lines starting with '#'
+        target_list = [l.strip() for l in f.readlines() if l.strip()[0]!='#']
     return target_list
 
+
 def create_date_list(args):
+    '''
+    '''
+    args.date_group
     return date_list
