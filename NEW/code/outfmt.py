@@ -25,8 +25,8 @@ logging.basicConfig(
     format='| %(message)s',
     datefmt='[%X]',
     handlers=[RichHandler(console=console,
-                          show_time=False,show_path=False,
-                          markup=True,rich_tracebacks=True)]
+                          show_time=False, show_path=False,
+                          markup=True, rich_tracebacks=True)]
 )
 
 # logging.getLogger('urllib3').setLevel(logging.WARNING)
