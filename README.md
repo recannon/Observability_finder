@@ -5,22 +5,22 @@
 
 ## Purpose:
 
-A package to find and compile when small solar system objects are observable from a given location on Earth to aid telescope proposal writing.
+The purpose of this code is to find when a list of solar system objects are observable from a given observatory on Earth in order to aid proposal writing.
+
+It will create:
+* A csv of the JPL Horizons call for all the objects across the semester
+* A csv summary of the median value for each night (to dos)
+* A pdf of nightly elevation charts and summary tables for all objects visible
+* A pdf with summary charts to show how the observability and target properties change over the course of the full semester
+
 
 ## Dependencies:
 
--numpy
-
--matplotlib
-
--astropy
-
--pandas
-
--astroquery
-
--rich
-
--pylatex
-
--ephem
+*numpy
+*matplotlib
+*astropy
+*pandas
+*astroquery
+*rich
+*pylatex
+*ephem
