@@ -10,10 +10,17 @@ A package to find and compile when small solar system objects are observable fro
 ## Dependencies:
 
 -numpy
+
 -matplotlib
+
 -astropy
+
 -pandas
+
 -astroquery
+
 -rich
+
 -pylatex
+
 -ephem
