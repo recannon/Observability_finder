@@ -65,7 +65,7 @@ def check_type(name:str, val:str, req_type:type):
     return val
 
 
-def validate_args(args):
+def validate_args(args:argparse.Namespace) -> argparse.Namespace:
     '''
     '''
     # Check verbose
@@ -137,7 +137,7 @@ def validate_args(args):
     return args
 
 
-def read_target_list(fname):
+def read_target_list(fname:Path) -> list[str]:
     '''
     Read input target list file.
     fname : input file (Path)
@@ -151,7 +151,7 @@ def read_target_list(fname):
     return target_list
 
 
-def create_date_list(start_date, end_date):
+def create_date_list(start_date:Time, end_date:Time) -> list[Time]:
     '''
     '''
     # Number of days to scan

@@ -5,7 +5,7 @@ from rich.progress import Progress
 from .outfmt import console, logger, error_exit
 
 
-def call_horizons(start_date, end_date, mpc_code, target_list):
+def call_horizons(start_date:Time, end_date:Time, mpc_code:str, target_list:list[str]) -> pd.DataFrame:
     '''
     '''
     epochs = {  'start' : start_date.strftime("%Y-%m-%d %H:00"),
@@ -36,7 +36,7 @@ def call_horizons(start_date, end_date, mpc_code, target_list):
     return eph_all_targets
 
 
-def call_horizons_obj(obj_name, mpc_code, epochs):
+def call_horizons_obj(obj_name:str, mpc_code:str, epochs:dict) -> pd.DataFrame:
     '''
     '''
     obj_h = Horizons(id=str(obj_name), location=mpc_code, epochs=epochs)

@@ -5,7 +5,7 @@ from rich.theme import Theme
 import sys
 
 #Error message output
-def error_exit(message):
+def error_exit(message:str):
     logger.error(message)
     sys.exit(1)
 
