@@ -1,1 +1,3 @@
-OLD/__pycache__
+NEW/__pycache__
+OLD/
+*csv
