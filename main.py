@@ -9,10 +9,12 @@ def main():
     args = parse_args()
     args = validate_args(args)
     target_list = read_target_list(args.target_file)
+    logger.debug('Processed args and input file')
     date_list   = create_date_list(args.start_date, args.end_date)    
 
     eph = call_horizons(args.start_date, args.end_date, args.mpc_code, target_list)
     eph.to_csv(args.csv_output)
+    
     
     # csv = limit_cuts(csv, limits)
     
