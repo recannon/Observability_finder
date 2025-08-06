@@ -12,10 +12,9 @@ def main():
     logger.debug('Processed args and input file')
     date_list   = create_date_list(args.start_date, args.end_date)    
 
-    eph = call_horizons(args.start_date, args.end_date, args.mpc_code, target_list)
-    eph.to_csv(args.csv_output)
-    
-    # csv = limit_cuts(csv, limits)
+    eph_df = call_horizons(args.start_date, args.end_date, args.mpc_code, target_list)
+    eph_cut = limit_cuts(eph_df, args.mag_limit)
+    # eph.to_csv(args.csv_output)
     
     # return csv
     

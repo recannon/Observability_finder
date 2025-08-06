@@ -78,19 +78,15 @@ def limit_cuts(eph_df, mag_limit):
     
 
     '''
-    
-    print ('before', eph_df.size)
-    #Create mag value
+    # Create mag value
     if 'Tmag' in eph_df.columns: #This won't be the case if there are 0 comets
         eph_df['Mag'] = eph_df['Tmag']
         eph_df['Mag'] = eph_df['Mag'].mask((eph_df['Tmag'].isna()) | (eph_df['Tmag'] == 0), eph_df['V'])
     else:
         eph_df['Mag'] = eph_df['V']
     
-    #Now apply the magnitude limit
+    # Now apply the magnitude limit
     eph_df_cut = eph_df[eph_df['Mag'] < mag_limit].sort_values(by=['target', 'datetime_str']).reset_index(drop=True)
-
-    print ('after',eph_df_cut.size)
 
     return eph_df_cut
 
