@@ -152,5 +152,5 @@ def get_twilight_times(mpc_code:str, date_list:list[Time]) -> dict[Time]:
             night_info[f'{name}_rise'] = Time(twilight_rise.datetime())
 
             all_night_info.append(night_info)
-    
+
     return all_night_info
