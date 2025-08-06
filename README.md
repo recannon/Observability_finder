@@ -12,15 +12,3 @@ It will create:
 * A csv summary of the median value for each night (to do)
 * A pdf of nightly elevation charts and summary tables for all objects visible (to do)
 * A pdf with summary charts to show how the observability and target properties change over the course of the full semester (to do)
-
-
-## Dependencies:
-
-* numpy
-* matplotlib
-* astropy
-* pandas
-* astroquery
-* rich
-* pylatex
-* ephem
