@@ -2,7 +2,7 @@ import argparse
 import logging
 from .outfmt import logger
 from .read_inputs import parse_args, validate_args, read_target_list, create_date_list
-from .obs_find import create_horizon_dataframe, limit_cuts
+from .horizons_call import create_horizon_dataframe, limit_cuts
 
 def main():
     args = parse_args()

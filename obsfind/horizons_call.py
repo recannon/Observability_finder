@@ -139,30 +139,11 @@ def get_twilight_times(mpc_code:str, date:Time) -> dict[Time]:
 
     for name, angle in twilight_definitions.items():
             MPC_site.horizon = angle
-            MPC_site.date = sunset  # reset to sunset to avoid drift
-            try:
-                twilight_set = MPC_site.next_setting(ephem.Sun(), use_center=True)
-                twilight_rise = MPC_site.next_rising(ephem.Sun(), use_center=True)
-                MPC_site[f'{name}_twilight_start'] = Time(twilight_set.datetime())
-                MPC_site[f'{name}_twilight_end']   = Time(twilight_rise.datetime())
-            except (ephem.AlwaysUpError, ephem.NeverUpError):
-                MPC_site[f'{name}_twilight_start'] = None
-                MPC_site[f'{name}_twilight_end']   = None
+            twilight_set = MPC_site.next_setting(ephem.Sun(), use_center=True)
+            twilight_rise = MPC_site.next_rising(ephem.Sun(), use_center=True)
+            MPC_site[f'{name}_twilight_start'] = Time(twilight_set.datetime())
+            MPC_site[f'{name}_twilight_end']   = Time(twilight_rise.datetime())
 
-
-    # Keep counting sunsets and sunrises from the sun set after given time.
-    MPC_site.horizon  = '0'   # Horizon
-    set               = Time(MPC_site.next_setting(ephem.Sun(), start=date.iso).datetime())
-    rise              = Time(MPC_site.next_rising( ephem.Sun(), start=set.iso ).datetime())
-    MPC_site.horizon  = '-6'  # Civil twilight
-    civil_set         = Time(MPC_site.next_setting(ephem.Sun(), start=set.iso, use_center=True).datetime())
-    civil_rise        = Time(MPC_site.next_rising( ephem.Sun(), start=set.iso, use_center=True).datetime())
-    MPC_site.horizon  = '-12' # Nautical twilight
-    nautical_set      = Time(MPC_site.next_setting(ephem.Sun(), start=set.iso, use_center=True).datetime())
-    nautical_rise     = Time(MPC_site.next_rising( ephem.Sun(), start=set.iso, use_center=True).datetime())
-    MPC_site.horizon  = '-18' # Astronomical twilight
-    astronomical_set  = Time(MPC_site.next_setting(ephem.Sun(), start=set.iso, use_center=True).datetime())
-    astronomical_rise = Time(MPC_site.next_rising( ephem.Sun(), start=set.iso, use_center=True).datetime())
 
     return {
         'set'               : set,
