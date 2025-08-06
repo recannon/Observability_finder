@@ -2,14 +2,15 @@ import argparse
 import logging
 from .outfmt import logger
 from .read_inputs import parse_args, validate_args, read_target_list, create_date_list
-from .horizons_call import create_horizon_dataframe, limit_cuts
+from .horizons_call import create_horizon_dataframe, limit_cuts, get_twilight_times
 
 def main():
     args = parse_args()
     args = validate_args(args)
     target_list = read_target_list(args.target_file)
     logger.debug('Processed args and input file')
-    date_list   = create_date_list(args.start_date, args.end_date)    
+    date_list     = create_date_list(args.start_date, args.end_date)    
+    twilight_list = get_twilight_times(args.mpc_code,date_list)
 
     # Create dataframe and apply cuts
     eph_df = create_horizon_dataframe(args.start_date, args.end_date, args.mpc_code, target_list)
