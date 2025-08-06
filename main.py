@@ -12,11 +12,10 @@ def main():
     logger.debug('Processed args and input file')
     date_list   = create_date_list(args.start_date, args.end_date)    
 
-    eph_df = call_horizons(args.start_date, args.end_date, args.mpc_code, target_list)
-    #eph.to_csv(args.csv_output) - should we save with diff ame
+    eph = call_horizons(args.start_date, args.end_date, args.mpc_code, target_list)
+    eph.to_csv(args.csv_output)
     
-    
-    eph_df_cut = limit_cuts(eph_df, args.mag_limit)
+    # csv = limit_cuts(csv, limits)
     
     # return csv
     
