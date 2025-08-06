@@ -8,7 +8,7 @@ import ephem
 import numpy as np
 
 
-def call_horizons(start_date:Time, end_date:Time, mpc_code:str, target_list:list[str]) -> pd.DataFrame:
+def create_horizon_dataframe(start_date:Time, end_date:Time, mpc_code:str, target_list:list[str]) -> pd.DataFrame:
     '''
     Calls JPL Horizons for a list of targets and returns a DataFrame with ephemerides.
 
@@ -45,7 +45,12 @@ def call_horizons(start_date:Time, end_date:Time, mpc_code:str, target_list:list
 
     # Concatenate DataFrames
     eph_all_targets = pd.concat(eph_list)
-        
+    
+    # Create elevation (horizon has airmass)
+    eph_all_targets = eph_all_targets.reset_index(drop=True)
+    eph_all_targets['elevation'] = 90 - np.rad2deg(np.arccos(1 / eph_all_targets['airmass']))
+    logger.info("Horizons call complete")
+    
     return eph_all_targets
 
 
@@ -73,7 +78,7 @@ def call_horizons_obj(obj_name:str, mpc_code:str, epochs:dict) -> pd.DataFrame:
     return eph
 
 
-def limit_cuts(eph_df, mag_limit):
+def limit_cuts(eph_df, mag_limit, elevation_limit):
     '''
     
 
@@ -84,10 +89,12 @@ def limit_cuts(eph_df, mag_limit):
         eph_df['Mag'] = eph_df['Mag'].mask((eph_df['Tmag'].isna()) | (eph_df['Tmag'] == 0), eph_df['V'])
     else:
         eph_df['Mag'] = eph_df['V']
-    
-    # Now apply the magnitude limit
+    # Apply the magnitude limit
     eph_df_cut = eph_df[eph_df['Mag'] < mag_limit].sort_values(by=['target', 'datetime_str']).reset_index(drop=True)
 
+    # Apply elevation cuts
+    eph_df_cut = eph_df_cut[eph_df_cut['elevation'] > elevation_limit]
+    
     return eph_df_cut
 
 
