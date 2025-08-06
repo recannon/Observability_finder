@@ -10,18 +10,21 @@ import numpy as np
 
 
 def create_horizon_dataframe(start_date:Time, end_date:Time, mpc_code:str, target_list:list[str]) -> pd.DataFrame:
-    '''
+  
+    """
     Calls JPL Horizons for a list of targets and returns a DataFrame with ephemerides.
 
     Inputs
+    -----
         start_date  : astropy Time() object for the start date of the ephemerides.
         end_date    : astropy Time() object for the end date of the ephemerides.
         mpc_code    : MPC code for the observatory - https://www.minorplanetcenter.net/iau/lists/ObsCodes.html
         target_list : list of target names (strings) to query.
 
     Output
+    ------
         eph_all_targets : DataFrame with ephemerides for all targets.
-    '''
+    """
     epochs = {  'start' : start_date.strftime("%Y-%m-%d %H:00"),
                 'stop'  : (end_date + TimeDelta(2,format="jd")).strftime("%Y-%m-%d %H:00"),
                 'step'  : '15min'}
@@ -64,7 +67,7 @@ def create_horizon_dataframe(start_date:Time, end_date:Time, mpc_code:str, targe
 
 
 def call_horizons_obj(obj_name:str, mpc_code:str, epochs:dict) -> pd.DataFrame:
-    '''
+    """
     Calls JPL Horizons for a single object and returns a DataFrame with ephemerides.
 
     Inputs
@@ -74,7 +77,7 @@ def call_horizons_obj(obj_name:str, mpc_code:str, epochs:dict) -> pd.DataFrame:
 
     Output
         eph         : DataFrame with ephemerides for the object.
-    '''
+    """
     obj_h = Horizons(id=str(obj_name), location=mpc_code, epochs=epochs)
     try: 
         # Fails if no ephemerides meet the criteria (I.E, not present in the sky during this time)
@@ -88,10 +91,10 @@ def call_horizons_obj(obj_name:str, mpc_code:str, epochs:dict) -> pd.DataFrame:
 
 
 def limit_cuts(eph_df, mag_limit, elevation_limit):
-    '''
+    """
     
 
-    '''
+    """
     # Create mag value
     if 'Tmag' in eph_df.columns: #This won't be the case if there are 0 comets
         eph_df['Mag'] = eph_df['Tmag']
