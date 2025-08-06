@@ -108,43 +108,47 @@ def limit_cuts(eph_df, mag_limit, elevation_limit):
 
 
 def get_twilight_times(mpc_code:str, date:Time) -> dict[Time]:
-    '''
-    Calculates times of setting and rising of the Sun, and the start and end times of civil, nautical, and astronomical twilight.
-        
-    Input
-        date        : astropy Time() object for the day for which the following night should be checked.
-        MPC_code    : MPC code for the observatory - https://www.minorplanetcenter.net/iau/lists/ObsCodes.html
-    
-    Output
-        Dictionary object
-            'set'               : set
-            'rise'              : rise
-            'civil_set'         : civil_set
-            'civil_rise'        : civil_rise
-            'nautical_rise'     : nautical_rise
-            'nautical_set'      : nautical_set
-            'astronomical_rise' : astronomical_rise
-            'astronomical_set'  : astronomical_set
 
-            All values are astropy.Time objects.
-    '''    
-
-    # Load MPC latitude and longitude and manipulate units
+    # Load MPC latitude and longitude
     obs_sites   = MPC_query.get_observatory_codes()
     rho_cos_phi = obs_sites[obs_sites['Code']==mpc_code]['cos'].value
     rho_sin_phi = obs_sites[obs_sites['Code']==mpc_code]['sin'].value
     rho         = np.sqrt(rho_cos_phi**2 + rho_sin_phi**2)
     phi         = np.arcsin(rho_sin_phi/rho)
-    
-    # Site latitude and longitude
     site_lat = np.rad2deg(phi)[0]
     site_lon = obs_sites[obs_sites['Code']==mpc_code]['Longitude'].value[0]
 
-    # Create MPC_site for ephem package
     MPC_site      = ephem.Observer()
     MPC_site.lon  = str(site_lon)
     MPC_site.lat  = str(site_lat)
-    MPC_site.date = date.iso
+    
+    # Approximate local noon (in UT)
+    approx_local_noon = date + TimeDelta(0.5, format='jd') - TimeDelta((site_lon/360), format='jd') 
+    MPC_site.date     = approx_local_noon.iso
+
+    # Sunrise and sunsets
+    sunset  = Time(MPC_site.next_setting(ephem.Sun(), start=date.iso).datetime())
+    MPC_site.date     = sunset.iso
+    sunrise = Time(MPC_site.next_rising(ephem.Sun(), start=date.iso).datetime())
+
+    twilight_definitions = {
+            'civil': '-6',
+            'nautical': '-12',
+            'astronomical': '-18'
+        }
+
+    for name, angle in twilight_definitions.items():
+            MPC_site.horizon = angle
+            MPC_site.date = sunset  # reset to sunset to avoid drift
+            try:
+                twilight_set = MPC_site.next_setting(ephem.Sun(), use_center=True)
+                twilight_rise = MPC_site.next_rising(ephem.Sun(), use_center=True)
+                MPC_site[f'{name}_twilight_start'] = Time(twilight_set.datetime())
+                MPC_site[f'{name}_twilight_end']   = Time(twilight_rise.datetime())
+            except (ephem.AlwaysUpError, ephem.NeverUpError):
+                MPC_site[f'{name}_twilight_start'] = None
+                MPC_site[f'{name}_twilight_end']   = None
+
 
     # Keep counting sunsets and sunrises from the sun set after given time.
     MPC_site.horizon  = '0'   # Horizon
