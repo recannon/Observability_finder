@@ -1,4 +1,5 @@
 import pandas as pd
+import datetime
 from astropy.time import Time, TimeDelta
 from astroquery.jplhorizons import Horizons
 from astroquery.mpc import MPC as MPC_query
@@ -51,6 +52,14 @@ def create_horizon_dataframe(start_date:Time, end_date:Time, mpc_code:str, targe
     eph_all_targets['elevation'] = 90 - np.rad2deg(np.arccos(1 / eph_all_targets['airmass']))
     logger.info("Horizons call complete")
     
+    # Create time visible column in DataFrame
+    eph_all_targets['datetime'] = pd.to_datetime(eph_all_targets['datetime'])
+        
+    # # Loop over nights and mask the relevant rows
+    # for i, row in night_table.iterrows():
+    #     mask = (df['datetime'] >= row['start']) & (df['datetime'] <= row['end'])
+    #     df.loc[mask, 'night'] = row['night']
+        
     return eph_all_targets
 
 

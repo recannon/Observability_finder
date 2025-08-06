@@ -1,10 +1,9 @@
 import argparse
 import logging
-from code.outfmt import logger
-from code.read_inputs import parse_args, validate_args, read_target_list, create_date_list
-from code.obs_find import create_horizon_dataframe, limit_cuts
+from .outfmt import logger
+from .read_inputs import parse_args, validate_args, read_target_list, create_date_list
+from .obs_find import create_horizon_dataframe, limit_cuts
 
-#===Functions for parsing args below this point===
 def main():
     args = parse_args()
     args = validate_args(args)
