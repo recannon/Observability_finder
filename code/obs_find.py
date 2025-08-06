@@ -10,6 +10,16 @@ import numpy as np
 
 def call_horizons(start_date:Time, end_date:Time, mpc_code:str, target_list:list[str]) -> pd.DataFrame:
     '''
+    Calls JPL Horizons for a list of targets and returns a DataFrame with ephemerides.
+
+    Inputs
+        start_date  : astropy Time() object for the start date of the ephemerides.
+        end_date    : astropy Time() object for the end date of the ephemerides.
+        mpc_code    : MPC code for the observatory - https://www.minorplanetcenter.net/iau/lists/ObsCodes.html
+        target_list : list of target names (strings) to query.
+
+    Output
+        eph_all_targets : DataFrame with ephemerides for all targets.
     '''
     epochs = {  'start' : start_date.strftime("%Y-%m-%d %H:00"),
                 'stop'  : (end_date + TimeDelta(2,format="jd")).strftime("%Y-%m-%d %H:00"),
@@ -41,6 +51,15 @@ def call_horizons(start_date:Time, end_date:Time, mpc_code:str, target_list:list
 
 def call_horizons_obj(obj_name:str, mpc_code:str, epochs:dict) -> pd.DataFrame:
     '''
+    Calls JPL Horizons for a single object and returns a DataFrame with ephemerides.
+
+    Inputs
+        obj_name    : Name of the object to query.
+        mpc_code    : MPC code for the observatory - https://www.minorplanetcenter.net/iau/lists/ObsCodes.html
+        epochs      : Dictionary with 'start', 'stop', and 'step' keys for the time range.
+
+    Output
+        eph         : DataFrame with ephemerides for the object.
     '''
     obj_h = Horizons(id=str(obj_name), location=mpc_code, epochs=epochs)
     try: 
@@ -54,8 +73,26 @@ def call_horizons_obj(obj_name:str, mpc_code:str, epochs:dict) -> pd.DataFrame:
     return eph
 
 
-def limit_cuts(csv, limits):
-    return csv
+def limit_cuts(eph_df, mag_limit):
+    '''
+    
+
+    '''
+    
+    print ('before', eph_df.size)
+    #Create mag value
+    if 'Tmag' in eph_df.columns: #This won't be the case if there are 0 comets
+        eph_df['Mag'] = eph_df['Tmag']
+        eph_df['Mag'] = eph_df['Mag'].mask((eph_df['Tmag'].isna()) | (eph_df['Tmag'] == 0), eph_df['V'])
+    else:
+        eph_df['Mag'] = eph_df['V']
+    
+    #Now apply the magnitude limit
+    eph_df_cut = eph_df[eph_df['Mag'] < mag_limit].sort_values(by=['target', 'datetime_str']).reset_index(drop=True)
+
+    print ('after',eph_df_cut.size)
+
+    return eph_df_cut
 
 
 def get_twilight_times(mpc_code:str, date:Time) -> dict[Time]:
