@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 from astropy.time import Time
 
-def elevation_pdf(twilight_times,mpc_code,fig_path):
+def elevation_pdf(twilight_times,mpc_code,lunar_illum,fig_path):
     '''
     Saves a latex file with name ./Night-Charts-tex/summary_{date_str_nohyphen}.tex to create the airmass pdf for the given night.
 
@@ -56,7 +56,7 @@ def elevation_pdf(twilight_times,mpc_code,fig_path):
         f"Sunrise-Sunset: {sun_set.strftime('%H:%M')} - {sun_rise.strftime('%H:%M')} UT\\\\\n"
         f"Twilight-Twilight: {twlt_set.strftime('%H:%M')} - {twlt_rise.strftime('%H:%M')} UT\\\\\n"
         f"Night lasts: {night_length_hours:.1f} / {twilight_length_hours:.1f} hours.\\\\"
-        # f"Lunar Illumination: {lunar_illum/100:.2f}\\\\"
+        f"Lunar Illumination: {lunar_illum/100:.2f}\\\\"
     )
 
     doc.append(NoEscape(r'\begin{flushleft}'))

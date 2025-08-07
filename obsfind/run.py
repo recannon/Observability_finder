@@ -19,7 +19,7 @@ def main():
 
     # Save csv in output file
     eph_cut.to_csv(args.csv_output)
-    
+        
     target_plot_info = marker_list(eph_cut.target.unique())
     
     make_elevation_charts_pdf(eph_cut,twilight_list,target_plot_info,args.elevation_limit,args.mpc_code)

@@ -32,11 +32,12 @@ def make_elevation_charts_pdf(eph_cut,twilight_list,target_plot_info,elevation_l
         
             mask = (eph_cut['datetime'] >= row['sun_set']) & (eph_cut['datetime'] <= row['sun_rise'])
             eph_night = eph_cut[mask]        
+            lunar_illum = eph_night['lunar_illum'].median()
             
             # Makes fig for each night
             elevation_chart(row,eph_night,target_plot_info,elevation_limit,show_plot=False,fig_path=tmpdir_path)
             #Makes pdf for each night
-            elevation_pdf(row,mpc_code,fig_path=tmpdir_path)
+            elevation_pdf(row,mpc_code,lunar_illum,fig_path=tmpdir_path)
     
         subprocess.check_output([f"qpdf --empty --pages $(for i in {tmpdir_path}/elevation_????????.pdf; do echo $i 1-z; done) -- ./elevation.pdf"], shell=True)
 
@@ -58,7 +59,7 @@ def elevation_chart(twilight_times,eph_night,target_plot_info,elevation_limit,sh
         
         eph_night_tar = eph_night[eph_night.target==obj]
 
-        if obj == 'Moon':
+        if obj == 'Moon (301)':
             eph_night_tar.plot(x='datetime_str', y='elevation',
                             label='Moon', ax=ax,
                             linestyle='--', color='black', marker='', lw=7, alpha=0.75)
