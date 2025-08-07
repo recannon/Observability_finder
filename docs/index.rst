@@ -23,4 +23,5 @@ Indices and tables
     :maxdepth: 1
     :caption: Documentation
 
+    quick_start
     pyObsFind

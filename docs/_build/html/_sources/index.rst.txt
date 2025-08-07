@@ -21,6 +21,7 @@ Indices and tables
 
 .. toctree::
     :maxdepth: 1
-    :caption: API Documentation
+    :caption: Documentation
 
+    quick_start
     pyObsFind
