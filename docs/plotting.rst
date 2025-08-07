@@ -1,4 +1,4 @@
-plottting.py Functions
+plotting.py Functions
 =============================
  
 Functions to create plots for observability analysis.
