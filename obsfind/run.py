@@ -3,6 +3,7 @@ import logging
 from .outfmt import logger
 from .read_inputs import parse_args, validate_args, read_target_list, create_date_list
 from .ephemeris import create_horizon_dataframe, limit_cuts, get_twilight_times
+from .plotting import make_elevation_charts_pdf, marker_list
 
 def main():
     args = parse_args()
@@ -18,14 +19,11 @@ def main():
 
     # Save csv in output file
     eph_cut.to_csv(args.csv_output)
+        
+    target_plot_info = marker_list(eph_cut.target.unique())
     
-    # return csv
-    
-    # for day in date_list:
-    #     twilight_times = twilight_times()
-    #     plot()
-    #     create_summary()
-    #     latex()
+    make_elevation_charts_pdf(eph_cut,twilight_list,target_plot_info,args.elevation_limit,args.mpc_code)
+
     
     print('yay')
     return
