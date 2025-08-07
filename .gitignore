@@ -3,3 +3,4 @@ OLD/
 *csv
 .DS_Store
 pyObsFind.egg-info
+docs/_build
