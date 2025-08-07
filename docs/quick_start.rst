@@ -21,10 +21,12 @@ For example, the most simplistic command to run the package is:
 
     python -m obsfind.run path/to/example_targets.txt 2025-08-07 2025-08-10
 
-This will run the package with the default settings, checking the visibility of targets in the input file using the dates 2025-08-07 and 2025-08-10 inclusive. 
+Alter the file path to the location of the ``example_targets.txt`` file.
 
 An example target list file is available here: 
 :download:`example_targets.txt <_static/example_targets.txt>`
+
+This will run the package with the default settings, checking the visibility of targets in the input file using the dates 2025-08-07 and 2025-08-10 inclusive. 
 
 
 *List of inputs:*
