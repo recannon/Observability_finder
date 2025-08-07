@@ -23,7 +23,7 @@ author    = 'Richard Cannon, Abigail Patrick, Ottavia Truttero'
 root_doc  = 'index'
 
 # The full version, including alpha/beta/rc tags
-release = '0.2.0'
+release = '0.3.0'
 
 
 # -- General configuration ---------------------------------------------------
