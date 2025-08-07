@@ -1,5 +1,5 @@
-pyObsFind Functions
-=====================
+ephemeris.py Functions
+=============================
  
 Functions to create ephemeris DataFrame.
  

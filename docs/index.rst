@@ -24,4 +24,6 @@ Indices and tables
     :caption: Documentation
 
     quick_start
-    pyObsFind
+    read_inputs
+    ephemeris
+    

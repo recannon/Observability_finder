@@ -15,14 +15,12 @@ def create_horizon_dataframe(twilight_times:pd.DataFrame, mpc_code:str, target_l
     Calls JPL Horizons for a list of targets and returns a DataFrame with ephemerides.
 
     Inputs
-    -----
         start_date  : astropy Time() object for the start date of the ephemerides.
         end_date    : astropy Time() object for the end date of the ephemerides.
         mpc_code    : MPC code for the observatory - https://www.minorplanetcenter.net/iau/lists/ObsCodes.html
         target_list : list of target names (strings) to query.
 
     Output
-    ------
         eph_all_targets : DataFrame with ephemerides for all targets.
     """
     

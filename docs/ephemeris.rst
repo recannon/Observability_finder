@@ -1,9 +1,9 @@
-pyObsFind Functions
-=====================
-
+ephemeris.py Functions
+=============================
+ 
 Functions to create ephemeris DataFrame.
-
-.. automodule:: pyObsFind.horizons_call
+ 
+.. automodule:: obsfind.ephemeris
    :members:
    :undoc-members:
    :show-inheritance:
