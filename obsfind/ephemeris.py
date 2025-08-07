@@ -61,7 +61,7 @@ def create_horizon_dataframe(twilight_times:pd.DataFrame, mpc_code:str, target_l
         
     # Loop over nights and mask the relevant rows
     eph_all_targets['night'] = None
-    for i, date in twilight_times.iterrows():
+    for i, date in twilight_times.iterrows():            
         mask = (eph_all_targets['datetime'] >= date['sun_set']) & (eph_all_targets['datetime'] <= date['sun_rise'])
         eph_all_targets.loc[mask, 'night'] = date['night']
         
@@ -137,6 +137,10 @@ def get_twilight_times(mpc_code:str, date_list:list[Time]) -> dict[datetime]:
     MPC_site      = ephem.Observer()
     MPC_site.lon  = str(site_lon)
     MPC_site.lat  = str(site_lat)
+    
+    #Adjust for local_noon calc
+    if site_lon > 180:
+        site_lon -= 360  
 
     twilight_definitions = {
             'civil': '-6',
@@ -149,7 +153,7 @@ def get_twilight_times(mpc_code:str, date_list:list[Time]) -> dict[datetime]:
 
         night_info = {'night': night.to_datetime()}
 
-        # Approximate local noon (in UT)
+        # Approximate local noon (in UT)      
         approx_local_noon = night + TimeDelta(0.5, format='jd') - TimeDelta((site_lon/360), format='jd') 
         MPC_site.date     = approx_local_noon.iso
 

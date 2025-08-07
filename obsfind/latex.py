@@ -7,18 +7,6 @@ import numpy as np
 from astropy.time import Time
 
 def elevation_pdf(twilight_times,mpc_code,lunar_illum,fig_path):
-    '''
-    Saves a latex file with name ./Night-Charts-tex/summary_{date_str_nohyphen}.tex to create the airmass pdf for the given night.
-
-    Input
-        date      : date in astropy.Time format
-        eph       : dataframe output from Horizons call with all targets concatenated together.
-                        Should contain atleast horizons quantities 2,3,8,9,19,20,23,24,25
-        MPC_code  : MPC code for the observatory - https://www.minorplanetcenter.net/iau/lists/ObsCodes.html
-        t_vis_min : time threshold, in hours, a target must be visible for more than in order to be plotted. 
-        fig_path    : Folder directory within which you have set up Night-Charts and Night-summary directories    
-        
-    '''
     
     night = twilight_times['night']
 

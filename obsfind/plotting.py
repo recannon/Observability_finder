@@ -30,7 +30,7 @@ def make_elevation_charts_pdf(eph_cut,twilight_list,target_plot_info,elevation_l
         
         for _,row in twilight_list.iterrows():
         
-            mask = (eph_cut['datetime'] >= row['sun_set']) & (eph_cut['datetime'] <= row['sun_rise'])
+            mask = eph_cut['night'] == row['night']
             eph_night = eph_cut[mask]        
             lunar_illum = eph_night['lunar_illum'].median()
             
