@@ -10,8 +10,7 @@ def error_exit(message:str):
     sys.exit(1)
 
 custom_theme = Theme({
-    #Standard log levels
-    'logging.level.debug': 'dim white',
+    'logging.level.debug': 'green',
     'logging.level.info': 'cyan',
     'logging.level.warning': 'yellow',
     'logging.level.error': 'bold red',
