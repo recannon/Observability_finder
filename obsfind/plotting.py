@@ -10,6 +10,15 @@ from .latex import elevation_pdf
 import subprocess
 
 def marker_list(target_names):
+    """
+    Creates a list of markers and colours for plotting targets.
+
+    Inputs
+        target_names : List of target names to be plotted.
+
+    Output
+        target_plot_info : DataFrame with target names, markers, and colours.
+    """
     #Marker set up now that number of targets that will be plotted is known
     marker_opt = ['o','v','s','X','<','P','*','h','>','H','+','^','x','D']
     colour_opt = ['b','g','r','c','m','y']
@@ -24,6 +33,19 @@ def marker_list(target_names):
     return target_plot_info
 
 def make_elevation_charts_pdf(eph_cut,twilight_list,target_plot_info,elevation_limit,mpc_code):
+    """
+    Creates elevation charts for each night in the ephemeris DataFrame and saves them as a PDF.
+
+    Inputs
+        eph_cut          : DataFrame with ephemerides for each target.
+        twilight_list    : DataFrame with twilight times for each night.
+        target_plot_info : DataFrame with target names, markers, and colours.
+        elevation_limit  : Minimum elevation limit for plotting.
+        mpc_code         : MPC code of the observatory.
+
+    Output
+        elevation.pdf    : PDF file with elevation charts for each night.
+    """
     
     with tempfile.TemporaryDirectory() as tmpdir:
         tmpdir_path = Path(tmpdir)
@@ -43,6 +65,20 @@ def make_elevation_charts_pdf(eph_cut,twilight_list,target_plot_info,elevation_l
 
 
 def elevation_chart(twilight_times,eph_night,target_plot_info,elevation_limit,show_plot=False,fig_path='./temp_airmass'):
+    """
+    Creates an elevation chart for a given night.
+    
+    Inputs
+        twilight_times : DataFrame with twilight times for the night.
+        eph_night      : DataFrame with ephemerides for the night.
+        target_plot_info : DataFrame with target names, markers, and colours.
+        elevation_limit : Minimum elevation limit for plotting.
+        show_plot      : Boolean to show the plot (default: False).
+        fig_path       : Path to save the figure (default: './temp_airmass').
+
+    Output
+        Saves the elevation chart as a PNG file if fig_path is provided.
+    """
 
     night = twilight_times['night']
 

@@ -36,6 +36,7 @@ Please read our Quick Start section to learn how to install and run this package
     quick_start
     read_inputs
     ephemeris
+    plotting
 
 
     
