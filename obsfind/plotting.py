@@ -4,6 +4,10 @@ from .outfmt import error_exit,logger
 import datetime
 import pandas as pd
 import itertools
+import tempfile
+from pathlib import Path
+from .latex import elevation_pdf
+import subprocess
 
 def marker_list(target_names):
     #Marker set up now that number of targets that will be plotted is known
@@ -18,6 +22,24 @@ def marker_list(target_names):
     target_plot_info = pd.DataFrame(data = target_list_data)
 
     return target_plot_info
+
+def make_elevation_charts_pdf(eph_cut,twilight_list,target_plot_info,elevation_limit,mpc_code):
+    
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir_path = Path(tmpdir)
+        
+        for _,row in twilight_list.iterrows():
+        
+            mask = (eph_cut['datetime'] >= row['sun_set']) & (eph_cut['datetime'] <= row['sun_rise'])
+            eph_night = eph_cut[mask]        
+            
+            # Makes fig for each night
+            elevation_chart(row,eph_night,target_plot_info,elevation_limit,show_plot=False,fig_path=tmpdir_path)
+            #Makes pdf for each night
+            elevation_pdf(row,mpc_code,fig_path=tmpdir_path)
+    
+        subprocess.check_output([f"qpdf --empty --pages $(for i in {tmpdir_path}/elevation_????????.pdf; do echo $i 1-z; done) -- ./elevation.pdf"], shell=True)
+
 
 def elevation_chart(twilight_times,eph_night,target_plot_info,elevation_limit,show_plot=False,fig_path='./temp_airmass'):
 
@@ -77,7 +99,7 @@ def elevation_chart(twilight_times,eph_night,target_plot_info,elevation_limit,sh
     plt.grid(which='both',axis='both')
     plt.tight_layout()
     if fig_path:
-        plt.savefig(f'{fig_path}/airmass_{night.strftime("%Y%m%d")}.png')
+        plt.savefig(f'{fig_path}/elevation_{night.strftime("%Y%m%d")}.png')
     if show_plot:
         plt.show()
     plt.close()
