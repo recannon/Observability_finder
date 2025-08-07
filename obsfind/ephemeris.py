@@ -151,15 +151,12 @@ def get_twilight_times(mpc_code:str, date_list:list[Time]) -> dict[datetime]:
         # Approximate local noon (in UT)
         approx_local_noon = night + TimeDelta(0.5, format='jd') - TimeDelta((site_lon/360), format='jd') 
         MPC_site.date     = approx_local_noon.iso
-        print(f'{approx_local_noon=}')
 
         MPC_site.horizon = 0
         sunset        = MPC_site.next_setting(ephem.Sun())
         MPC_site.date = sunset
         sunrise       = MPC_site.next_rising(ephem.Sun())
-        
-        print(f'{sunset.datetime()=}')
-        
+                
         night_info['sun_set']  = sunset.datetime()
         night_info['sun_rise'] = sunrise.datetime()
         
@@ -170,8 +167,6 @@ def get_twilight_times(mpc_code:str, date_list:list[Time]) -> dict[datetime]:
             twilight_rise = MPC_site.next_rising(ephem.Sun(), use_center=True)
             night_info[f'{name}_set']  = twilight_set.datetime()
             night_info[f'{name}_rise'] = twilight_rise.datetime()
-
-        print(night_info['civil_set'])
 
         all_night_info.append(night_info)
 
