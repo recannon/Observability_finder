@@ -13,13 +13,13 @@ First pip install the package:
 How to run 
 ~~~~~~~~~~~~~~
 This package is designed to be run from the command line.
-To run the package input ``pyobsfind.run`` followed by the inputs you want to use.
+To run the package input ``obsfind.run`` followed by the inputs you want to use.
 
 For example, the most simplistic command to run the package is:
 
 .. code-block:: bash
 
-    python -m pyobsfind.run 2025-08-07 2025-08-10
+    python -m obsfind.run 2025-08-07 2025-08-10
 
 This will run the package with the default settings, using the dates 2025-08-07 and 2025-08-10 inclusive, using the target list provided: ``target_list.txt``. 
 If you want to use a different target list, you need to have this stored in a txt file and pass the path to the file as an input. 
