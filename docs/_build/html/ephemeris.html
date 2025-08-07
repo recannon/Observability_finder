@@ -99,26 +99,20 @@ epochs      : Dictionary with ‘start’, ‘stop’, and ‘step’ keys for t
 <dt class="sig sig-object py" id="obsfind.ephemeris.create_horizon_dataframe">
 <span class="sig-prename descclassname"><span class="pre">obsfind.ephemeris.</span></span><span class="sig-name descname"><span class="pre">create_horizon_dataframe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">twilight_times</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mpc_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="headerlink" href="#obsfind.ephemeris.create_horizon_dataframe" title="Link to this definition"></a></dt>
 <dd><p>Calls JPL Horizons for a list of targets and returns a DataFrame with ephemerides.</p>
-<section id="inputs">
-<h2>Inputs<a class="headerlink" href="#inputs" title="Link to this heading"></a></h2>
-<blockquote>
-<div><p>start_date  : astropy Time() object for the start date of the ephemerides.
+<dl class="simple">
+<dt>Inputs</dt><dd><p>start_date  : astropy Time() object for the start date of the ephemerides.
 end_date    : astropy Time() object for the end date of the ephemerides.
 mpc_code    : MPC code for the observatory - <a class="reference external" href="https://www.minorplanetcenter.net/iau/lists/ObsCodes.html">https://www.minorplanetcenter.net/iau/lists/ObsCodes.html</a>
 target_list : list of target names (strings) to query.</p>
-</div></blockquote>
-</section>
-<section id="output">
-<h2>Output<a class="headerlink" href="#output" title="Link to this heading"></a></h2>
-<blockquote>
-<div><p>eph_all_targets : DataFrame with ephemerides for all targets.</p>
-</div></blockquote>
-</section>
+</dd>
+<dt>Output</dt><dd><p>eph_all_targets : DataFrame with ephemerides for all targets.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="obsfind.ephemeris.get_twilight_times">
-<span class="sig-prename descclassname"><span class="pre">obsfind.ephemeris.</span></span><span class="sig-name descname"><span class="pre">get_twilight_times</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mpc_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Time</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict[&lt;module</span> <span class="pre">'datetime'</span> <span class="pre">from</span> <span class="pre">'/Users/s2537809/anaconda3/envs/codeastro/lib/python3.10/datetime.py'&gt;]</span></span></span><a class="headerlink" href="#obsfind.ephemeris.get_twilight_times" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">obsfind.ephemeris.</span></span><span class="sig-name descname"><span class="pre">get_twilight_times</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mpc_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Time</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict[&lt;module</span> <span class="pre">'datetime'</span> <span class="pre">from</span> <span class="pre">'/Users/s2555317/anaconda3/envs/ObsFind/lib/python3.11/datetime.py'&gt;]</span></span></span><a class="headerlink" href="#obsfind.ephemeris.get_twilight_times" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py function">

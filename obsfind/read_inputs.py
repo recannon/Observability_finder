@@ -33,7 +33,7 @@ def parse_args() -> argparse.Namespace:
                         help='Toggle flag for plotting')
 
     req_group = parser.add_argument_group('Required inputs. Dates format: YYYY-MM-DD')
-    req_group.add_argument('target-file', type=Path,
+    req_group.add_argument('target_file', type=Path,
                             help=f'Path to the target file')
     req_group.add_argument('start_date', type=str,
                             help='Initial date to check observability from')
