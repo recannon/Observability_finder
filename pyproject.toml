@@ -4,8 +4,13 @@ build-backend = "setuptools.build_meta"
  
 [project]
 name = "pyObsFind"
-version = "0.0.1"
- 
+version = "0.1.0"
+description = "Package to find when solar system objects are observable"
+readme = "README.md" 
+license = {text="MIT"}
+authors = [{name="Richard Cannon"},{name="Abigail Patrick"},{name="Ottavia Truttero"}]
+keywords = ["astronomy","ephemeris","asteroids","comets"]
+
 dependencies = [
  "matplotlib",
  "astropy",
