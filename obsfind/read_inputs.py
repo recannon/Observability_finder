@@ -9,7 +9,6 @@ from .outfmt import logger, error_exit
 
 
 # Configure default parameters
-DEFAULT_TARGET_FILE = './target_list.txt'
 DEFAULT_OUTPUT_CSV  = './output.csv'
 DEFAULT_MPC_CODE    = '809'      # Observatory MPC code
 DEFAULT_ELEVATION_LIMIT = 30     # Minimum elevation angle (degrees)
@@ -95,12 +94,18 @@ def validate_args(args:argparse.Namespace) -> argparse.Namespace:
         logger.setLevel(logging.DEBUG)
         logger.debug('Verbose: Set level to DEBUG')
 
+    # Check input file exists
+    if not args.target_file.is_file():
+        error_exit(f'Cannot find {args.target_file}')
+
     # Check dates format
     try:
         args.start_date = Time(args.start_date, format='iso')
         args.end_date   = Time(args.end_date, format='iso')
     except:
         error_exit('Cannot convert dates to astropy.time.Time objects. Check time input')
+    if args.end_date <= args.start_date:
+        error_exit(f'End date ({args.end_date.datetime.date()}) cannot be before start date ({args.start_date.datetime.date()})')
 
     # Check mag and apply default value if none
     if not args.mag_limit:
@@ -145,14 +150,8 @@ def validate_args(args:argparse.Namespace) -> argparse.Namespace:
 
     obs_sites = MPC_query.get_observatory_codes()
     logger.info(f"Selected observatory: {obs_sites[obs_sites['Code']==args.mpc_code]['Name'].value[0]}")
-
-    # Check if input file exists
-    if not args.target_file:
-        args.target_file = Path(DEFAULT_TARGET_FILE).resolve()
-    if not args.target_file.is_file():
-        error_exit(f'Cannot find {args.target_file}')
         
-    # Check if output file exists
+    # Default output value
     if not args.csv_output:
         args.csv_output = Path(DEFAULT_OUTPUT_CSV).resolve()
          
