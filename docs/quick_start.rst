@@ -28,12 +28,14 @@ An example target list file is available here:
 
 This will run the package with the default settings, checking the visibility of targets in the input file using the dates 2025-08-07 and 2025-08-10 inclusive. 
 
+**Warning:** to run this package you need internet access.
 
-*List of inputs:*
+
+**List of inputs:**
 
 - ``target_file``: The path to the target list file. Targets can be provisional or formal MPC designations on a line each.
 
-- ``start_date``: The start date of the search period in the format YYYY-MM-DD, as in example.
+- ``start_date``: The start date of the search period in the format YYYY-MM-DD, as in example. It is advised to use dats within 10 years to the present date.
 
 - ``end_date``: The end date of the search period in the format YYYY-MM-DD, inclusive, as in example.
 
