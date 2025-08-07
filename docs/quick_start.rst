@@ -30,6 +30,7 @@ This will run the package with the default settings, checking the visibility of 
 
 
 *List of inputs:*
+
 - ``target_file``: The path to the target list file. Targets can be provisional or formal MPC designations on a line each.
 
 - ``start_date``: The start date of the search period in the format YYYY-MM-DD, as in example.
