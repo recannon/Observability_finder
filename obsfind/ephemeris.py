@@ -9,7 +9,7 @@ import ephem
 import numpy as np
 
 
-def create_horizon_dataframe(start_date:Time, end_date:Time, mpc_code:str, target_list:list[str]) -> pd.DataFrame:
+def create_horizon_dataframe(twilight_times:pd.DataFrame, mpc_code:str, target_list:list[str]) -> pd.DataFrame:
   
     """
     Calls JPL Horizons for a list of targets and returns a DataFrame with ephemerides.
@@ -25,6 +25,9 @@ def create_horizon_dataframe(start_date:Time, end_date:Time, mpc_code:str, targe
     ------
         eph_all_targets : DataFrame with ephemerides for all targets.
     """
+    
+    start_date = twilight_times['date'].iloc(0)
+    end_date = twilight_times['date'].iloc(-1)
     epochs = {  'start' : start_date.strftime("%Y-%m-%d %H:00"),
                 'stop'  : (end_date + TimeDelta(2,format="jd")).strftime("%Y-%m-%d %H:00"),
                 'step'  : '15min'}
@@ -58,10 +61,14 @@ def create_horizon_dataframe(start_date:Time, end_date:Time, mpc_code:str, targe
     # Create time visible column in DataFrame
     eph_all_targets['datetime'] = pd.to_datetime(eph_all_targets['datetime'])
         
-    # # Loop over nights and mask the relevant rows
-    # for i, row in night_table.iterrows():
-    #     mask = (df['datetime'] >= row['start']) & (df['datetime'] <= row['end'])
-    #     df.loc[mask, 'night'] = row['night']
+    # Loop over nights and mask the relevant rows
+    eph_all_targets['night'] = None
+    for i, date in twilight_times.iterrows():
+        mask = (eph_all_targets['datetime'] >= date['sunset']) & (eph_all_targets['datetime'] <= date['sunrise'])
+        eph_all_targets.loc[mask, 'night'] = date['night']
+        
+    # Drop rows not assigned to any night
+    eph_nightly = eph_all_targets.dropna(subset=['night'])
         
     return eph_all_targets
 
@@ -90,7 +97,7 @@ def call_horizons_obj(obj_name:str, mpc_code:str, epochs:dict) -> pd.DataFrame:
     return eph
 
 
-def limit_cuts(eph_df, mag_limit, elevation_limit):
+def limit_cuts(eph_df, mag_limit, elevation_limit, t_vis_limit):
     """
     
 
@@ -107,6 +114,13 @@ def limit_cuts(eph_df, mag_limit, elevation_limit):
     # Apply elevation cuts
     eph_df_cut = eph_df_cut[eph_df_cut['elevation'] > elevation_limit]
     
+    # Apply time visible cuts (0.25 = 15 mins / 1 hour)
+    t_vis_counts    = eph_df_cut.groupby(['target', 'night']).size()
+    t_vis_dur       = t_vis_counts.mul(0.25).reset_index(name='duration_hours')
+    targets_visible = t_vis_dur[t_vis_dur['duration_hours'] >= t_vis_limit]
+    
+    eph_df_cut = eph_df_cut.merge(targets_visible, on=['target', 'night'], how='inner')
+        
     return eph_df_cut
 
 
@@ -155,5 +169,7 @@ def get_twilight_times(mpc_code:str, date_list:list[Time]) -> dict[Time]:
             night_info[f'{name}_rise'] = Time(twilight_rise.datetime())
 
             all_night_info.append(night_info)
+
+    all_night_info = pd.DataFrame(all_night_info)
 
     return all_night_info
