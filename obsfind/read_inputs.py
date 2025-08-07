@@ -32,21 +32,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('-p', '--plot', action='store_true',
                         help='Toggle flag for plotting')
 
-    date_group = parser.add_argument_group('Input dates. Format: YYYY-MM-DD')
-    date_group.add_argument('start_date', type=str,
+    req_group = parser.add_argument_group('Required inputs. Dates format: YYYY-MM-DD')
+    req_group.add_argument('target_file', type=Path,
+                            help=f'Path to the target file')
+    req_group.add_argument('start_date', type=str,
                             help='Initial date to check observability from')
-    date_group.add_argument('end_date', type=str,
+    req_group.add_argument('end_date', type=str,
                             help='Final date to check observability (inclusive)')
 
     mpc_group = parser.add_argument_group('Optional MPC code input: https://www.minorplanetcenter.net/iau/lists/ObsCodes.html')
     mpc_group.add_argument('-mpc', '--mpc-code', type=str,
                            help=f'Location for observation site: default = {DEFAULT_MPC_CODE}')
-
-    file_group = parser.add_argument_group('Optional file names')
-    file_group.add_argument('-targ', '--target-file', type=Path, 
-                            help=f'Name of the target list file. Default: {DEFAULT_TARGET_FILE}')
-    file_group.add_argument('-csv', '--csv-output', type=Path,
-                            help=f'Name of the output csv file. Default: {DEFAULT_OUTPUT_CSV}')
 
     limit_group = parser.add_argument_group('Optional inputs for limits')
     limit_group.add_argument('-mag', '--mag-limit', type=str,
@@ -57,6 +53,10 @@ def parse_args() -> argparse.Namespace:
                                    help=f'Maximum airmass to be observable [float]. Use this only if no elevation is specified.')
     limit_group.add_argument('-tvis', '--time-visible-limit', type=str,
                                    help=f'Minimum time visible per night to be included in observable list [float]. Default: {DEFAULT_TIME_VISIBLE}')
+    
+    file_group = parser.add_argument_group('Optional output file name')
+    file_group.add_argument('-csv', '--csv-output', type=Path,
+                            help=f'Name of the output csv file. Default: {DEFAULT_OUTPUT_CSV}')    
     
     return parser.parse_args()
 
