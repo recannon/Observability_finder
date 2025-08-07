@@ -9,7 +9,7 @@ import ephem
 import numpy as np
 
 
-def create_horizon_dataframe(start_date:Time, end_date:Time, mpc_code:str, target_list:list[str]) -> pd.DataFrame:
+def create_horizon_dataframe(twilight_times:pd.DataFrame, mpc_code:str, target_list:list[str]) -> pd.DataFrame:
   
     """
     Calls JPL Horizons for a list of targets and returns a DataFrame with ephemerides.
@@ -25,8 +25,11 @@ def create_horizon_dataframe(start_date:Time, end_date:Time, mpc_code:str, targe
     ------
         eph_all_targets : DataFrame with ephemerides for all targets.
     """
-    epochs = {  'start' : start_date.strftime("%Y-%m-%d %H:00"),
-                'stop'  : (end_date + TimeDelta(2,format="jd")).strftime("%Y-%m-%d %H:00"),
+    
+    start_date = twilight_times['night'].iloc[0]
+    end_date = twilight_times['night'].iloc[-1]
+    epochs = {  'start' : Time(start_date).strftime("%Y-%m-%d %H:00"),
+                'stop'  : (Time(end_date) + TimeDelta(2,format="jd")).strftime("%Y-%m-%d %H:00"),
                 'step'  : '15min'}
 
     # Append moon to target_list
@@ -56,12 +59,18 @@ def create_horizon_dataframe(start_date:Time, end_date:Time, mpc_code:str, targe
     logger.info("Horizons call complete")
     
     # Create time visible column in DataFrame
-    eph_all_targets['datetime'] = pd.to_datetime(eph_all_targets['datetime'])
+    eph_all_targets['datetime'] = pd.to_datetime(eph_all_targets['datetime_str'])
         
-    # # Loop over nights and mask the relevant rows
-    # for i, row in night_table.iterrows():
-    #     mask = (df['datetime'] >= row['start']) & (df['datetime'] <= row['end'])
-    #     df.loc[mask, 'night'] = row['night']
+    # Loop over nights and mask the relevant rows
+    eph_all_targets['night'] = None
+    for i, date in twilight_times.iterrows():
+        mask = (eph_all_targets['datetime'] >= date['sun_set']) & (eph_all_targets['datetime'] <= date['sun_rise'])
+        eph_all_targets.loc[mask, 'night'] = date['night']
+        
+    # Drop rows not assigned to any night
+    eph_all_targets = eph_all_targets.dropna(subset=['night'])
+        
+    eph_all_targets['night'] = pd.to_datetime(eph_all_targets['night'])    
         
     return eph_all_targets
 
@@ -90,7 +99,7 @@ def call_horizons_obj(obj_name:str, mpc_code:str, epochs:dict) -> pd.DataFrame:
     return eph
 
 
-def limit_cuts(eph_df, mag_limit, elevation_limit):
+def limit_cuts(eph_df, mag_limit, elevation_limit, t_vis_limit):
     """
     
 
@@ -107,10 +116,16 @@ def limit_cuts(eph_df, mag_limit, elevation_limit):
     # Apply elevation cuts
     eph_df_cut = eph_df_cut[eph_df_cut['elevation'] > elevation_limit]
     
+    # Apply time visible cuts (0.25 = 15 mins / 1 hour)
+    t_vis_counts    = eph_df_cut.groupby(['target', 'night']).size()
+    t_vis_dur       = t_vis_counts.mul(0.25).reset_index(name='duration_hours')
+    targets_visible = t_vis_dur[t_vis_dur['duration_hours'] >= t_vis_limit]    
+    eph_df_cut = eph_df_cut.merge(targets_visible, on=['target', 'night'], how='inner')    
+            
     return eph_df_cut
 
 
-def get_twilight_times(mpc_code:str, date_list:list[Time]) -> dict[Time]:
+def get_twilight_times(mpc_code:str, date_list:list[Time]) -> dict[datetime]:
 
     obs_sites   = MPC_query.get_observatory_codes()
     rho_cos_phi = obs_sites[obs_sites['Code']==mpc_code]['cos'].value
@@ -133,15 +148,15 @@ def get_twilight_times(mpc_code:str, date_list:list[Time]) -> dict[Time]:
 
     for night in date_list:
 
-        night_info = {'date': night}
+        night_info = {'night': night.to_datetime()}
 
         # Approximate local noon (in UT)
         approx_local_noon = night + TimeDelta(0.5, format='jd') - TimeDelta((site_lon/360), format='jd') 
         MPC_site.date     = approx_local_noon.iso
 
-        sunset  = Time(MPC_site.next_setting(ephem.Sun()).datetime())
-        MPC_site.date     = sunset.iso
-        sunrise = Time(MPC_site.next_rising(ephem.Sun()).datetime())
+        sunset  = MPC_site.next_setting(ephem.Sun()).datetime()
+        MPC_site.date     = sunset.strftime('%Y-%m-%d %H:%M:%S')
+        sunrise = MPC_site.next_rising(ephem.Sun()).datetime()
         
         night_info['sun_set']  = sunset
         night_info['sun_rise'] = sunrise
@@ -151,9 +166,11 @@ def get_twilight_times(mpc_code:str, date_list:list[Time]) -> dict[Time]:
             MPC_site.horizon = angle
             twilight_set = MPC_site.next_setting(ephem.Sun(), use_center=True)
             twilight_rise = MPC_site.next_rising(ephem.Sun(), use_center=True)
-            night_info[f'{name}_set']  = Time(twilight_set.datetime())
-            night_info[f'{name}_rise'] = Time(twilight_rise.datetime())
+            night_info[f'{name}_set']  = twilight_set.datetime()
+            night_info[f'{name}_rise'] = twilight_rise.datetime()
 
-            all_night_info.append(night_info)
+        all_night_info.append(night_info)
+
+    all_night_info = pd.DataFrame(all_night_info)
 
     return all_night_info
