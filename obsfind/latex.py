@@ -7,18 +7,17 @@ from .outfmt import logger
 
 def create_pdf(twilight_times,summary_df,mpc_code,pdf_path):
 
-    """Create a PDF report with elevation data and twilight times.
-    
+    """
+    Creates a PDF with elevation chart and summary table for a given night.
+
     Inputs
-        twilight_times (dict)  : Dictionary containing twilight times with keys: 'night', 'sun_set', 'sun_rise', 'astronomical_set', 'astronomical_rise'.
-        mpc_code (str)         : MPC code of the observatory.
-        lunar_illum (float)    : Lunar illumination percentage.
-        pdf_path (str)         : Path to save the PDF file.
-
+        twilight_times : DataFrame with twilight times for the night.
+        summary_df     : DataFrame with summary information for the night.
+        mpc_code       : MPC code for the observatory.
+        pdf_path       : Path to save the PDF file.
+        
     Output
-        A PDF file containing the elevation data and twilight times.
-        The PDF will include an image of the elevation plot and a summary of the night, including sunrise, sunset, and twilight times.
-
+        Saves the PDF file with elevation chart and summary table.
     """
     
     night_str = twilight_times['night'].strftime('%Y-%b-%d')

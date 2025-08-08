@@ -18,6 +18,7 @@ def make_elevation_charts_pdf(eph_cut, twilight_list, target_plot_info, elevatio
         target_plot_info : DataFrame with target names, markers, and colours.
         elevation_limit  : Minimum elevation limit for plotting.
         mpc_code         : MPC code of the observatory.
+        base_out_name    : Base name for the output files (default: '').
 
     Output
         PDF file with elevation charts for each night.
@@ -62,6 +63,17 @@ def make_elevation_charts_pdf(eph_cut, twilight_list, target_plot_info, elevatio
     return eph_summary
 
 def summarize_target(group,twilight_info=None):
+
+    """
+    Summarizes the ephemeris data for a target by calculating median values.
+    
+    Inputs
+        group         : DataFrame group for a specific target.
+        twilight_info : Optional DataFrame with twilight times for the night.
+
+    Output
+        Series with median values for the target.
+    """
     
     medians = group.agg({
         'alpha': 'median',
