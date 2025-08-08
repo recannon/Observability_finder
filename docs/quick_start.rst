@@ -7,8 +7,8 @@ First pip install the package:
 
 .. code-block:: bash
 
-    pip install pyobsfind=0.4.0
-
+    pip install pyobsfind
+    
 
 How to run 
 ~~~~~~~~~~~~~~
