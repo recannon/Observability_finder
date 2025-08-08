@@ -17,7 +17,9 @@ def main():
     eph_cut = limit_cuts(eph_df, args.mag_limit, args.elevation_limit, args.time_visible_limit)
 
     # Save csv in output file
-    eph_cut.to_csv(args.output_base + 'csv_output.csv')
+    eph_cut_output_path = args.output_base + 'csv_output.csv'
+    eph_cut.to_csv(eph_cut_output_path)
+    logger.info(f"Ephemerides saved to {eph_cut_output_path}")
         
     target_plot_info = marker_list(eph_cut.target.unique())
     
