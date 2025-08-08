@@ -1,9 +1,10 @@
 import argparse
 import logging
-from .outfmt import logger
+from .outfmt import logger, error_exit
 from .read_inputs import parse_args, validate_args, read_target_list, create_date_list
 from .ephemeris import create_horizon_dataframe, limit_cuts, get_twilight_times
-from .plotting import make_elevation_charts_pdf, marker_list
+from .plotting import marker_list
+from .create_output import make_elevation_charts_pdf
 
 def main():
     args = parse_args()

@@ -28,20 +28,6 @@ logging.basicConfig(
                           markup=True, rich_tracebacks=True)]
 )
 
-# logging.getLogger('urllib3').setLevel(logging.WARNING)
-# logging.getLogger('requests').setLevel(logging.WARNING)
-
-# #Matplotlib spam
-# logging.getLogger('matplotlib').setLevel(logging.WARNING)
-# logging.getLogger('matplotlib.font_manager').setLevel(logging.WARNING)
-# logging.getLogger('matplotlib.backends.backend_pdf').setLevel(logging.WARNING)
-# logging.getLogger('matplotlib').setLevel(logging.INFO)
-
-# #Annoying things on import
-# logging.getLogger('pooch').setLevel(logging.WARNING)
-# logging.getLogger('numcodecs').setLevel(logging.WARNING)
-# logging.getLogger('zarr').setLevel(logging.WARNING)
-# logging.getLogger('dask').setLevel(logging.WARNING)
 logger = logging.getLogger('observability_finder_logger')
 logger.setLevel(logging.INFO)
 

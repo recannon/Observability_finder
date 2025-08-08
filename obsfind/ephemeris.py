@@ -29,10 +29,6 @@ def create_horizon_dataframe(twilight_times:pd.DataFrame, mpc_code:str, target_l
     epochs = {  'start' : Time(start_date).strftime("%Y-%m-%d %H:00"),
                 'stop'  : (Time(end_date) + TimeDelta(2,format="jd")).strftime("%Y-%m-%d %H:00"),
                 'step'  : '15min'}
-
-    # Append moon to target_list
-    if '301' not in target_list:
-        target_list += ['301']
     
     # Empty list of ephemeride dataframes
     eph_list = []
@@ -47,6 +43,10 @@ def create_horizon_dataframe(twilight_times:pd.DataFrame, mpc_code:str, target_l
             eph_list.append(eph)
 
             pb.update(t1,advance=1)
+            
+    #Call moon
+    moon_eph = call_horizons_moon(mpc_code,epochs)
+    eph_list.append(moon_eph)
 
     # Concatenate DataFrames
     eph_all_targets = pd.concat(eph_list)
@@ -73,6 +73,18 @@ def create_horizon_dataframe(twilight_times:pd.DataFrame, mpc_code:str, target_l
     return eph_all_targets
 
 
+def call_horizons_moon(mpc_code:str,epochs:dict,obj_name='301'):
+    
+    obj_h = Horizons(id=str(obj_name), location=mpc_code, epochs=epochs)
+    try: 
+        # Fails if no ephemerides meet the criteria (I.E, not present in the sky during this time)
+        eph = obj_h.ephemerides(skip_daylight=True, quantities='1,8,9,24,25,47').to_pandas()
+        eph['target'] = obj_name
+        eph['datetime_str'] = pd.to_datetime(eph['datetime_str'], format='%Y-%b-%d %H:%M')
+    except:
+        logger.debug(f'Cannot see {obj_name}')
+    return eph
+
 def call_horizons_obj(obj_name:str, mpc_code:str, epochs:dict) -> pd.DataFrame:
     """
     Calls JPL Horizons for a single object and returns a DataFrame with ephemerides.
@@ -83,9 +95,9 @@ def call_horizons_obj(obj_name:str, mpc_code:str, epochs:dict) -> pd.DataFrame:
         epochs      : Dictionary with 'start', 'stop', and 'step' keys for the time range.
 
     Output
-        eph         : DataFrame with ephemerides for the object.
+        DataFrame with ephemerides for the object.
     """
-    obj_h = Horizons(id=str(obj_name), location=mpc_code, epochs=epochs)
+    obj_h = Horizons(id=str(obj_name), location=mpc_code, epochs=epochs, id_type='smallbody')
     try: 
         # Fails if no ephemerides meet the criteria (I.E, not present in the sky during this time)
         eph = obj_h.ephemerides(skip_daylight=True, quantities='1,8,9,24,25,47').to_pandas()
@@ -99,8 +111,14 @@ def call_horizons_obj(obj_name:str, mpc_code:str, epochs:dict) -> pd.DataFrame:
 
 def limit_cuts(eph_df, mag_limit, elevation_limit, t_vis_limit):
     """
-    
-
+    Applies magnitude, elevation, and time visible limit cuts to the ephemeris DataFrame.
+    Inputs
+        eph_df         : DataFrame with ephemerides for all targets.
+        mag_limit      : Magnitude limit for filtering targets.
+        elevation_limit: Minimum elevation limit for filtering targets.
+        t_vis_limit    : Minimum time visible limit in hours for filtering targets.
+    Output
+        DataFrame with ephemerides after applying the cuts.
     """
     # Create mag value
     if 'Tmag' in eph_df.columns: #This won't be the case if there are 0 comets
@@ -111,20 +129,28 @@ def limit_cuts(eph_df, mag_limit, elevation_limit, t_vis_limit):
     # Apply the magnitude limit
     eph_df_cut = eph_df[eph_df['Mag'] < mag_limit].sort_values(by=['target', 'datetime_str']).reset_index(drop=True)
 
-    # Apply elevation cuts
-    eph_df_elev = eph_df_cut[eph_df_cut['elevation'] > elevation_limit]
-    
-    # Apply time visible cuts (0.25 = 15 mins / 1 hour)
-    t_vis_counts    = eph_df_elev.groupby(['target', 'night']).size()
-    t_vis_dur       = t_vis_counts.mul(0.25).reset_index(name='duration_hours')
-    targets_visible = t_vis_dur[t_vis_dur['duration_hours'] >= t_vis_limit]    
-    
-    eph_df_cut = eph_df_cut.merge(targets_visible, on=['target', 'night'], how='inner')    
-    
+    # Time visible above elevation limit
+    above_elev   = eph_df_cut[eph_df_cut['elevation'] > elevation_limit]    
+    t_vis_counts = above_elev.groupby(['target', 'night']).size()          
+    t_vis_dur    = t_vis_counts.mul(0.25).reset_index(name='duration_hours')
+    targets_visible = t_vis_dur[t_vis_dur['duration_hours'] >= t_vis_limit][['target', 'night']]
+
+    # Filter not visible targets
+    eph_df_cut = eph_df_cut.merge(targets_visible, on=['target', 'night'], how='inner')
+
     return eph_df_cut
 
 
-def get_twilight_times(mpc_code:str, date_list:list[Time]) -> dict[datetime]:
+def get_twilight_times(mpc_code:str, date_list:list[Time]) -> dict[datetime.datetime]:
+    """
+    Calculates twilight times for a given observatory code and list of dates.
+    
+    Inputs
+        mpc_code  : MPC code for the observatory - https://www.minorplanetcenter.net/iau/lists/ObsCodes.html
+        date_list : List of astropy Time objects representing the nights to calculate twilight times for.
+    Output
+        Dictionary with twilight times for each night, including sunrise, sunset, and twilight times.
+    """
 
     obs_sites   = MPC_query.get_observatory_codes()
     rho_cos_phi = obs_sites[obs_sites['Code']==mpc_code]['cos'].value

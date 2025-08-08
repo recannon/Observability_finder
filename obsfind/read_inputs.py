@@ -21,7 +21,7 @@ def parse_args() -> argparse.Namespace:
     Parse command line arguments for the observability finder script.
 
     Returns:
-        argparse.Namespace: Parsed command line arguments.
+        Parsed command line arguments.
     '''
     # Create the argument parser
     parser = argparse.ArgumentParser(description='',
@@ -70,7 +70,7 @@ def check_type(name:str, val:str, req_type:type):
         req_type    : Required type for the argument.
 
     Output
-        val         : Value of the argument if the type is correct, otherwise raises an error.
+        Value of the argument if the type is correct, otherwise raises an error.
     '''
     try: 
         val = req_type(val)
@@ -87,7 +87,7 @@ def validate_args(args:argparse.Namespace) -> argparse.Namespace:
         args        : Parsed command line arguments.
 
     Output
-        args        : Validated command line arguments.
+        Validated command line arguments.
     '''
     # Check verbose
     if args.verbose:
@@ -157,7 +157,6 @@ def validate_args(args:argparse.Namespace) -> argparse.Namespace:
          
     return args
 
-
 def read_target_list(fname:Path) -> list[str]:
     '''
     Reads the target list from a file.
@@ -166,12 +165,25 @@ def read_target_list(fname:Path) -> list[str]:
         fname       : Path to the target list file.
 
     Output
-        target_list : List of target names (strings) read from the file.
+        List of target names (strings) read from the file.
 
     '''
     with open(fname,'r') as f:
         # Read all targets in file avoiding lines starting with '#'
         target_list = [l.strip() for l in f.readlines() if l.strip()[0]!='#']
+        
+    if '301' in target_list:
+        logger.warning('Detected target name: 301. The moon will be plotted automatically.')
+        bavaria_check = input('Did you mean asteroid (301) Bavaria? (y/n)')
+        if bavaria_check.strip().lower() in ('y', 'yes'):
+            logger.warning('Will plot asteroid (301) Bavaria')
+        else:
+            logger.warning('Will not plot asteroid (301) Bavaria')
+            target_list.remove('301')
+    
+    # Remove duplicates
+    target_list = list(set(target_list))
+    
     return target_list
 
 
@@ -184,7 +196,7 @@ def create_date_list(start_date:Time, end_date:Time) -> list[Time]:
         end_date    : astropy Time() object for the end date.
 
     Output
-        date_list   : List of astropy Time() objects for each day in the range.
+        List of astropy Time() objects for each day in the range.
     '''
     # Number of days to scan
     len_days = int((end_date - start_date).jd)
