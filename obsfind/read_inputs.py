@@ -9,7 +9,6 @@ from .outfmt import logger, error_exit
 
 
 # Configure default parameters
-DEFAULT_OUTPUT_CSV  = './output.csv'
 DEFAULT_MPC_CODE    = '809'      # Observatory MPC code
 DEFAULT_ELEVATION_LIMIT = 30     # Minimum elevation angle (degrees)
 DEFAULT_TIME_VISIBLE    = 1      # Minimum time visible (hours)
@@ -53,9 +52,9 @@ def parse_args() -> argparse.Namespace:
     limit_group.add_argument('-tvis', '--time-visible-limit', type=str,
                                    help=f'Minimum time visible per night to be included in observable list [float]. Default: {DEFAULT_TIME_VISIBLE}')
     
-    file_group = parser.add_argument_group('Optional output file name')
-    file_group.add_argument('-csv', '--csv-output', type=Path,
-                            help=f'Name of the output csv file. Default: {DEFAULT_OUTPUT_CSV}')    
+    file_group = parser.add_argument_group('Optional output file name base')
+    file_group.add_argument('-out', '--output-base', type=str,
+                            help=f'Optional name of the output files base.')    
     
     return parser.parse_args()
 
@@ -150,12 +149,14 @@ def validate_args(args:argparse.Namespace) -> argparse.Namespace:
 
     obs_sites = MPC_query.get_observatory_codes()
     logger.info(f"Selected observatory: {obs_sites[obs_sites['Code']==args.mpc_code]['Name'].value[0]}")
-        
-    # Default output value
-    if not args.csv_output:
-        args.csv_output = Path(DEFAULT_OUTPUT_CSV).resolve()
-         
+    
+    if args.output_base:
+        args.output_base += '_'
+    else: 
+        args.output_base = ''
+
     return args
+
 
 def read_target_list(fname:Path) -> list[str]:
     '''
