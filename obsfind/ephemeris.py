@@ -74,12 +74,23 @@ def create_horizon_dataframe(twilight_times:pd.DataFrame, mpc_code:str, target_l
 
 
 def call_horizons_moon(mpc_code:str,epochs:dict,obj_name='301'):
+    """
+    Calls JPL Horizons for the moon and returns a DataFrame with ephemerides.
+    
+    Inputs
+        mpc_code    : MPC code for the observatory - https://www.minorplanetcenter.net/iau/lists/ObsCodes.html
+        epochs      : Dictionary with 'start', 'stop', and 'step' keys for the time range.
+        obj_name    : Name of the object to query, default is '301' for the moon.
+    
+    Output
+        DataFrame with ephemerides for the moon.
+    """
     
     obj_h = Horizons(id=str(obj_name), location=mpc_code, epochs=epochs)
     try: 
         # Fails if no ephemerides meet the criteria (I.E, not present in the sky during this time)
-        eph = obj_h.ephemerides(skip_daylight=True, quantities='1,8,9,24,25,47').to_pandas()
-        eph['target'] = obj_name
+        eph = obj_h.ephemerides(quantities='1,8,9,24,25,47').to_pandas()
+        eph['target'] = 'Moon'
         eph['datetime_str'] = pd.to_datetime(eph['datetime_str'], format='%Y-%b-%d %H:%M')
     except:
         logger.debug(f'Cannot see {obj_name}')

@@ -17,12 +17,13 @@ def main():
     eph_cut = limit_cuts(eph_df, args.mag_limit, args.elevation_limit, args.time_visible_limit)
 
     # Save csv in output file
-    eph_cut.to_csv(args.csv_output)
+    eph_cut_output_path = args.output_base + 'csv_output.csv'
+    eph_cut.to_csv(eph_cut_output_path)
+    logger.info(f"Ephemerides saved to {eph_cut_output_path}")
         
     target_plot_info = marker_list(eph_cut.target.unique())
     
-    make_elevation_charts_pdf(eph_cut,twilight_list,target_plot_info,args.elevation_limit,args.mpc_code)
-
+    night_summaries = make_elevation_charts_pdf(eph_cut, twilight_list, target_plot_info, args.elevation_limit, args.mpc_code, args.output_base)
     
     print('yay')
     return

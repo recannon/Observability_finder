@@ -37,6 +37,9 @@ Please read our Quick Start section to learn how to install and run this package
     read_inputs
     ephemeris
     plotting
+    create_output
+    latex
+   
 
 
     

@@ -7,8 +7,8 @@ First pip install the package:
 
 .. code-block:: bash
 
-    pip install pyobsfind 
-
+    pip install pyobsfind
+    
 
 How to run 
 ~~~~~~~~~~~~~~
@@ -45,7 +45,7 @@ This will run the package with the default settings, checking the visibility of 
 
 - ``-mpc --mpc-code``: Location for observation site: default la Silla. You can find the MPC codes here: `MPC codes <https://www.minorplanetcenter.net/iau/lists/ObsCodes.html>`_
 
-- ``-csv --csv-output``: Name of the output csv file. Default: ``output.csv``
+- ``-out --output``: Optional output base name for the output files. 
 
 - ``-mag --mag-limit``: Upper limit of magnitude to be classed as visible [float]. Default: 25
 

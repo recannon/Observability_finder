@@ -3,8 +3,22 @@ from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Image, Table, TableStyle, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from astropy.time import Time
+from .outfmt import logger
 
-def create_pdf(twilight_times,mpc_code,lunar_illum,pdf_path):
+def create_pdf(twilight_times,summary_df,mpc_code,pdf_path):
+
+    """
+    Creates a PDF with elevation chart and summary table for a given night.
+
+    Inputs
+        twilight_times : DataFrame with twilight times for the night.
+        summary_df     : DataFrame with summary information for the night.
+        mpc_code       : MPC code for the observatory.
+        pdf_path       : Path to save the PDF file.
+        
+    Output
+        Saves the PDF file with elevation chart and summary table.
+    """
     
     night_str = twilight_times['night'].strftime('%Y-%b-%d')
     night_str_nohyphen = twilight_times['night'].strftime('%Y%m%d')
@@ -14,9 +28,11 @@ def create_pdf(twilight_times,mpc_code,lunar_illum,pdf_path):
     fig_name = f'{pdf_path}/elevation_{night_str_nohyphen}.png'
     pdf_name = f'{pdf_path}/elevation_{night_str_nohyphen}.pdf'
 
+    lunar_illum_val = summary_df['lunar_illum'].iloc[0] #They're all the same anyway
+
     doc = SimpleDocTemplate(pdf_name, pagesize=letter,
-                            rightMargin=40, leftMargin=40,
-                            topMargin=60, bottomMargin=40)
+                            rightMargin=20, leftMargin=20,
+                            topMargin=20, bottomMargin=20)
     styles = getSampleStyleSheet()
     story = []
        
@@ -28,48 +44,61 @@ def create_pdf(twilight_times,mpc_code,lunar_illum,pdf_path):
     # Otherwise, convert if needed:
     # lunar_illum_float = lunar_illum if isinstance(lunar_illum, (float,int)) else lunar_illum.to_value()
 
-    # Add image
+    #===Figure===
     im = Image(fig_name)
     im._restrictSize(450, 300)  # max width and height in points
     story.append(im)
     story.append(Spacer(1, 12))
 
+    #===Info text===
     info_text = f"""
     <b>{night_str}</b><br/>
     MPC code: {mpc_code}<br/>
     Sunrise-Sunset: {sun_set.strftime('%H:%M')} - {sun_rise.strftime('%H:%M')} UT<br/>
     Twilight-Twilight: {twlt_set.strftime('%H:%M')} - {twlt_rise.strftime('%H:%M')} UT<br/>
     Night lasts: {night_length_hours:.1f} / {twilight_length_hours:.1f} hours<br/>
-    Lunar Illumination: {lunar_illum/100:.2f}
+    Lunar Illumination: {lunar_illum_val/100:.2f}
     """
     story.append(Paragraph(info_text, styles['Normal']))
     story.append(Spacer(1, 12))
 
-    # # Prepare table data
-    # data = [['Target', 'RA', 'DEC', 'App_Mag']]
-    # for _, target in twilight_times.iterrows():
-    #     if target['target'] == 'Moon':
-    #         continue
-    #     row = [
-    #         str(target['night']),
-    #         str(target['sun_rise']),
-    #         str(target['sun_set']),
-    #         f"{target['astronomical_rise']:.2f}",
-    #     ]
-    #     data.append(row)
+    #===Table===
+    decimal_format = {
+        'RA_str': '{}',         # Already a string, no formatting needed
+        'DEC_str': '{}',        # Already a string, no formatting needed
+        'Mag': '{:.1f}',        # 2 decimal places
+        'Sky_motion': '{:.3f}', # 2 decimal places
+        'alpha': '{:.1f}',      # 2 decimal places
+        'lunar_elong': '{:.2f}',# 1 decimal place
+        'target': '{}'          # string, no formatting
+    }
 
-    # Create and style table
-    # table = Table(data, colWidths=[70, 60, 60, 60])
-    # style = TableStyle([
-    #     ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-    #     ('TEXTCOLOR',(0, 0), (-1, 0), colors.whitesmoke),
-    #     ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-    #     ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-    #     ('BOTTOMPADDING', (0,0), (-1,0), 8),
-    #     ('GRID', (0,0), (-1,-1), 0.5, colors.black),
-    # ])
-    # table.setStyle(style)
-    # story.append(table)
+    columns = ['target', 'RA_str', 'DEC_str', 'Mag', 'Sky_motion', 'alpha', 'lunar_elong']
+    column_names = ['Target','RA','DEC','V/T-Mag','Sky Mot.', 'Alpha', 'T-O-M']
+    data = [column_names]  # header row
 
-    # Build PDF
+    for _, row in summary_df.iterrows():
+        formatted_row = []
+        for col in columns:
+            val = row[col]
+            fmt = decimal_format.get(col, '{}')  # default to string format if not specified
+            try:
+                formatted_val = fmt.format(val)
+            except Exception:
+                formatted_val = str(val)
+            formatted_row.append(formatted_val)
+        data.append(formatted_row)
+        
+    table = Table(data, repeatRows=1)  # repeat header on each page
+    style = TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),       # Header background
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),  # Header text color
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),    # Header font
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.black),      # Grid lines
+    ])
+    table.setStyle(style)
+    story.append(table)
+
     doc.build(story)
