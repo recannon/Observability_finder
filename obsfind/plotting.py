@@ -95,7 +95,7 @@ def elevation_chart(twilight_times,eph_night,target_plot_info,elevation_limit,sh
         
         eph_night_tar = eph_night[eph_night.target==obj]
 
-        if obj == 'Moon (301)':
+        if obj == '301':
             eph_night_tar.plot(x='datetime_str', y='elevation',
                             label='Moon', ax=ax,
                             linestyle='--', color='black', marker='', lw=7, alpha=0.75)
