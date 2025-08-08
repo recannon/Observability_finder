@@ -181,7 +181,10 @@ def read_target_list(fname:Path) -> list[str]:
         else:
             logger.warning('Will not plot asteroid (301) Bavaria')
             target_list.remove('301')
-            
+    
+    # Remove duplicates
+    target_list = list(set(target_list))
+    
     return target_list
 
 

@@ -81,12 +81,9 @@ def call_horizons_moon(mpc_code:str,epochs:dict,obj_name='301'):
         eph = obj_h.ephemerides(skip_daylight=True, quantities='1,8,9,24,25,47').to_pandas()
         eph['target'] = obj_name
         eph['datetime_str'] = pd.to_datetime(eph['datetime_str'], format='%Y-%b-%d %H:%M')
-        print(eph['targetname'])
     except:
         logger.debug(f'Cannot see {obj_name}')
     return eph
-    
-
 
 def call_horizons_obj(obj_name:str, mpc_code:str, epochs:dict) -> pd.DataFrame:
     """
@@ -106,7 +103,6 @@ def call_horizons_obj(obj_name:str, mpc_code:str, epochs:dict) -> pd.DataFrame:
         eph = obj_h.ephemerides(skip_daylight=True, quantities='1,8,9,24,25,47').to_pandas()
         eph['target'] = obj_name
         eph['datetime_str'] = pd.to_datetime(eph['datetime_str'], format='%Y-%b-%d %H:%M')
-        print(eph['targetname'])
     except:
         logger.debug(f'Cannot see {obj_name}')
     
@@ -127,16 +123,15 @@ def limit_cuts(eph_df, mag_limit, elevation_limit, t_vis_limit):
     # Apply the magnitude limit
     eph_df_cut = eph_df[eph_df['Mag'] < mag_limit].sort_values(by=['target', 'datetime_str']).reset_index(drop=True)
 
-    # Apply elevation cuts
-    eph_df_elev = eph_df_cut[eph_df_cut['elevation'] > elevation_limit]
-    
-    # Apply time visible cuts (0.25 = 15 mins / 1 hour)
-    t_vis_counts    = eph_df_elev.groupby(['target', 'night']).size()
-    t_vis_dur       = t_vis_counts.mul(0.25).reset_index(name='duration_hours')
-    targets_visible = t_vis_dur[t_vis_dur['duration_hours'] >= t_vis_limit]    
-    
-    eph_df_cut = eph_df_cut.merge(targets_visible, on=['target', 'night'], how='inner')    
-    
+    # Time visible above elevation limit
+    above_elev   = eph_df_cut[eph_df_cut['elevation'] > elevation_limit]    
+    t_vis_counts = above_elev.groupby(['target', 'night']).size()          
+    t_vis_dur    = t_vis_counts.mul(0.25).reset_index(name='duration_hours')
+    targets_visible = t_vis_dur[t_vis_dur['duration_hours'] >= t_vis_limit][['target', 'night']]
+
+    # Filter not visible targets
+    eph_df_cut = eph_df_cut.merge(targets_visible, on=['target', 'night'], how='inner')
+
     return eph_df_cut
 
 
