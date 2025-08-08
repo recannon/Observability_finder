@@ -48,6 +48,7 @@ def make_elevation_charts_pdf(eph_cut, twilight_list, target_plot_info, elevatio
             
             summary_df["lunar_illum"] = lunar_illum
             summary_df = summary_df[summary_df['target'] != 'Moon']
+            summary_df = summary_df.sort_values(by='RA_str')
             summary_list.append(summary_df)
             
             # Makes fig for each night
@@ -104,8 +105,8 @@ def summarize_target(group,twilight_info=None,tar_name=None):
         'date_str'    : night.strftime('%Y-%m-%d'),
         'datetime_str': pd.to_datetime(night),
         **medians,
-        'RA_str'      : med_coord.ra.to_string(unit=u.hour, sep=':', precision=0),
-        'DEC_str'     : med_coord.dec.to_string(sep=':', precision=0),
+        'RA_str'      : med_coord.ra.to_string(unit=u.hour, sep=':', precision=0, pad=True),
+        'DEC_str'     : med_coord.dec.to_string(sep=':', precision=0, pad=True),
         'twlt_stt'    : twilight_info['astronomical_set'],
         'twlt_stp'    : twilight_info['astronomical_rise'],
         'nght_stt'    : twilight_info['sun_set'],
