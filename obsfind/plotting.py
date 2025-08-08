@@ -45,7 +45,7 @@ def elevation_chart(twilight_times, eph_night, target_plot_info, elevation_limit
     night = twilight_times['night']
 
     # Create figure
-    fig, ax = plt.subplots(figsize=(18,15))
+    fig, ax = plt.subplots(figsize=(22,15))
     ax = plt.gca()
 
     elevation_ticks = [tick for tick in np.arange(0, 91, 10) if tick>=elevation_limit]
@@ -57,7 +57,7 @@ def elevation_chart(twilight_times, eph_night, target_plot_info, elevation_limit
         
         eph_night_tar = eph_night[eph_night.target==obj]
 
-        if obj == '301':
+        if obj == 'Moon':
             eph_night_tar.plot(x='datetime_str', y='elevation',
                             label='Moon', ax=ax,
                             linestyle='--', color='black', marker='', lw=7, alpha=0.75)
