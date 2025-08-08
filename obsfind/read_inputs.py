@@ -172,6 +172,19 @@ def read_target_list(fname:Path) -> list[str]:
     with open(fname,'r') as f:
         # Read all targets in file avoiding lines starting with '#'
         target_list = [l.strip() for l in f.readlines() if l.strip()[0]!='#']
+        
+    if '301' in target_list:
+        logger.warning('Detected target name: 301. The moon will be plotted automatically.')
+        bavaria_check = input('Did you mean asteroid (301) Bavaria? (y/n)')
+        if bavaria_check.strip().lower() in ('y', 'yes'):
+            logger.warning('Will plot asteroid (301) Bavaria')
+        else:
+            logger.warning('Will not plot asteroid (301) Bavaria')
+            target_list.remove('301')
+    
+    # Remove duplicates
+    target_list = list(set(target_list))
+    
     return target_list
 
 
