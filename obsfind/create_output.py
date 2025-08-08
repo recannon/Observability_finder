@@ -3,6 +3,7 @@ from .latex import create_pdf
 import tempfile
 from pathlib import Path
 from pypdf import PdfWriter, PdfReader
+from .outfmt import logger, error_exit
 
 def make_elevation_charts_pdf(eph_cut, twilight_list, target_plot_info, elevation_limit, mpc_code, base_out_name=''):
     """
