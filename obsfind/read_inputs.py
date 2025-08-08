@@ -157,7 +157,6 @@ def validate_args(args:argparse.Namespace) -> argparse.Namespace:
          
     return args
 
-
 def read_target_list(fname:Path) -> list[str]:
     '''
     Reads the target list from a file.
