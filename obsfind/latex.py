@@ -52,25 +52,25 @@ def elevation_pdf(twilight_times,mpc_code,lunar_illum,fig_path):
     doc.append(NoEscape(r'\end{flushleft}'))
     doc.append(NoEscape(r'\centering'))
 
-    # #table
-    # with doc.create(Tabular('lcccccc')) as table:
-    #     table.add_hline()
-    #     table.add_hline()
-    #     table.add_row(['Target', 'RA', 'DEC', 'App_Mag', 'Rate', 'Vis', 'T-O-M'])
-    #     table.add_hline()
-    #     for _, target in df_night_summary.iterrows():
-    #         if target['target'] == 'Moon':
-    #             continue
-    #         table.add_row([
-    #             escape_latex(str(target['target'])),
-    #             escape_latex(str(target['RA_str'])),
-    #             escape_latex(str(target['DEC_str'])),
-    #             f"{target['Mag']:.2f}",
-    #             f"{target['rate']:.3f}",
-    #             f"{target['T_Vis']:.2f}",
-    #             f"{target['lunar_elong']:.1f}"
-    #         ])
-    #     table.add_hline()
+    #table
+    with doc.create(Tabular('lcccccc')) as table:
+        table.add_hline()
+        table.add_hline()
+        table.add_row(['Target', 'RA', 'DEC', 'App_Mag', 'Rate', 'Vis', 'T-O-M'])
+        table.add_hline()
+        for _, target in df_night_summary.iterrows():
+            if target['target'] == 'Moon':
+                continue
+            table.add_row([
+                escape_latex(str(target['target'])),
+                escape_latex(str(target['RA_str'])),
+                escape_latex(str(target['DEC_str'])),
+                f"{target['Mag']:.2f}",
+                f"{target['rate']:.3f}",
+                f"{target['T_Vis']:.2f}",
+                f"{target['lunar_elong']:.1f}"
+            ])
+        table.add_hline()
 
     # Generate PDF
     doc.generate_pdf(fig_path / tex_filename.stem, clean_tex=False, clean=True, compiler='pdflatex', silent=True)
