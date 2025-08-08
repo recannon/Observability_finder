@@ -4,7 +4,7 @@ import tempfile
 from pathlib import Path
 from pypdf import PdfWriter, PdfReader
 
-def make_elevation_charts_pdf(eph_cut, twilight_list, target_plot_info, elevation_limit, mpc_code):
+def make_elevation_charts_pdf(eph_cut, twilight_list, target_plot_info, elevation_limit, mpc_code, base_out_name=''):
     """
     Creates elevation charts for each night in the ephemeris DataFrame and saves them as a PDF.
 
@@ -42,7 +42,7 @@ def make_elevation_charts_pdf(eph_cut, twilight_list, target_plot_info, elevatio
             for page in reader.pages:
                 writer.add_page(page)
 
-        output_path = "./elevation.pdf"
+        output_path = "./" + base_out_name + "elevation.pdf"
         with open(output_path, "wb") as f_out:
             writer.write(f_out)
 
