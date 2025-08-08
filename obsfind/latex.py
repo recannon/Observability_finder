@@ -1,7 +1,7 @@
 from .outfmt import logger,error_exit
 import subprocess
-from pylatex import Document, Section, Tabular, NoEscape, Figure, Command
-from pylatex.utils import bold, escape_latex
+# from pylatex import Document, Section, Tabular, NoEscape, Figure, Command
+# from pylatex.utils import bold, escape_latex
 from pathlib import Path
 import numpy as np
 from astropy.time import Time

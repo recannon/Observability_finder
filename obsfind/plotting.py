@@ -6,7 +6,7 @@ import pandas as pd
 import itertools
 import tempfile
 from pathlib import Path
-from .latex import elevation_pdf
+# from .latex import elevation_pdf
 import subprocess
 
 

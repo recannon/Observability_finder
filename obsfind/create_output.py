@@ -1,6 +1,6 @@
 import subprocess
 from .plotting import elevation_chart
-from .latex import elevation_pdf
+# from .latex import elevation_pdf
 from .latex2 import create_pdf
 import tempfile
 from pathlib import Path
