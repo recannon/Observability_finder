@@ -17,7 +17,7 @@ def marker_list(target_names):
         target_names : List of target names to be plotted.
 
     Output
-        target_plot_info : DataFrame with target names, markers, and colours.
+        DataFrame with target names, markers, and colours.
     """
     #Marker set up now that number of targets that will be plotted is known
     marker_opt = ['o','v','s','X','<','P','*','h','>','H','+','^','x','D']
@@ -44,7 +44,7 @@ def make_elevation_charts_pdf(eph_cut,twilight_list,target_plot_info,elevation_l
         mpc_code         : MPC code of the observatory.
 
     Output
-        elevation.pdf    : PDF file with elevation charts for each night.
+        PDF file with elevation charts for each night.
     """
     
     with tempfile.TemporaryDirectory() as tmpdir:

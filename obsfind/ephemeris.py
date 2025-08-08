@@ -83,7 +83,7 @@ def call_horizons_obj(obj_name:str, mpc_code:str, epochs:dict) -> pd.DataFrame:
         epochs      : Dictionary with 'start', 'stop', and 'step' keys for the time range.
 
     Output
-        eph         : DataFrame with ephemerides for the object.
+        DataFrame with ephemerides for the object.
     """
     obj_h = Horizons(id=str(obj_name), location=mpc_code, epochs=epochs)
     try: 
@@ -99,8 +99,14 @@ def call_horizons_obj(obj_name:str, mpc_code:str, epochs:dict) -> pd.DataFrame:
 
 def limit_cuts(eph_df, mag_limit, elevation_limit, t_vis_limit):
     """
-    
-
+    Applies magnitude, elevation, and time visible limit cuts to the ephemeris DataFrame.
+    Inputs
+        eph_df         : DataFrame with ephemerides for all targets.
+        mag_limit      : Magnitude limit for filtering targets.
+        elevation_limit: Minimum elevation limit for filtering targets.
+        t_vis_limit    : Minimum time visible limit in hours for filtering targets.
+    Output
+        DataFrame with ephemerides after applying the cuts.
     """
     # Create mag value
     if 'Tmag' in eph_df.columns: #This won't be the case if there are 0 comets
@@ -124,7 +130,16 @@ def limit_cuts(eph_df, mag_limit, elevation_limit, t_vis_limit):
     return eph_df_cut
 
 
-def get_twilight_times(mpc_code:str, date_list:list[Time]) -> dict[datetime]:
+def get_twilight_times(mpc_code:str, date_list:list[Time]) -> dict[datetime.datetime]:
+    """
+    Calculates twilight times for a given observatory code and list of dates.
+    
+    Inputs
+        mpc_code  : MPC code for the observatory - https://www.minorplanetcenter.net/iau/lists/ObsCodes.html
+        date_list : List of astropy Time objects representing the nights to calculate twilight times for.
+    Output
+        Dictionary with twilight times for each night, including sunrise, sunset, and twilight times.
+    """
 
     obs_sites   = MPC_query.get_observatory_codes()
     rho_cos_phi = obs_sites[obs_sites['Code']==mpc_code]['cos'].value
