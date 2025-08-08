@@ -5,6 +5,20 @@ from reportlab.lib.styles import getSampleStyleSheet
 from astropy.time import Time
 
 def create_pdf(twilight_times,mpc_code,lunar_illum,pdf_path):
+
+    """Create a PDF report with elevation data and twilight times.
+    
+    Inputs
+        twilight_times (dict)  : Dictionary containing twilight times with keys: 'night', 'sun_set', 'sun_rise', 'astronomical_set', 'astronomical_rise'.
+        mpc_code (str)         : MPC code of the observatory.
+        lunar_illum (float)    : Lunar illumination percentage.
+        pdf_path (str)         : Path to save the PDF file.
+
+    Output
+        A PDF file containing the elevation data and twilight times.
+        The PDF will include an image of the elevation plot and a summary of the night, including sunrise, sunset, and twilight times.
+
+    """
     
     night_str = twilight_times['night'].strftime('%Y-%b-%d')
     night_str_nohyphen = twilight_times['night'].strftime('%Y%m%d')

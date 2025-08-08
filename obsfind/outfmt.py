@@ -6,6 +6,14 @@ import sys
 
 #Error message output
 def error_exit(message:str):
+    """Outputs an error message and exits the program.
+
+    Inputs
+        message : Error message to be displayed.
+    
+    Output
+        Exits the program with an error code.
+    """
     logger.error(message)
     sys.exit(1)
 
