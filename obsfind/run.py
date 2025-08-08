@@ -23,8 +23,7 @@ def main():
         
     target_plot_info = marker_list(eph_cut.target.unique())
     
-    make_elevation_charts_pdf(eph_cut, twilight_list, target_plot_info, args.elevation_limit, args.mpc_code, args.output_base)
-
+    night_summaries = make_elevation_charts_pdf(eph_cut, twilight_list, target_plot_info, args.elevation_limit, args.mpc_code, args.output_base)
     
     print('yay')
     return
