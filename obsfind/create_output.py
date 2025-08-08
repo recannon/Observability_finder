@@ -1,7 +1,5 @@
-import subprocess
 from .plotting import elevation_chart
-# from .latex import elevation_pdf
-from .latex2 import create_pdf
+from .latex import create_pdf
 import tempfile
 from pathlib import Path
 from pypdf import PdfWriter, PdfReader
@@ -32,11 +30,8 @@ def make_elevation_charts_pdf(eph_cut, twilight_list, target_plot_info, elevatio
             # Makes fig for each night
             elevation_chart(row,eph_night,target_plot_info,elevation_limit,show_plot=False,fig_path=tmpdir_path)
             # Makes pdf for each night
-            # elevation_pdf(row,mpc_code,lunar_illum,fig_path=tmpdir_path)
             create_pdf(row,mpc_code,lunar_illum,pdf_path=tmpdir_path)
     
-        # subprocess.check_output([f"qpdf --empty --pages $(for i in {tmpdir_path}/elevation_????????.pdf; do echo $i 1-z; done) -- ./elevation.pdf"], shell=True)
-
         pdf_name_format = "elevation_????????.pdf"
         pdf_files = sorted(tmpdir_path.glob(pdf_name_format))
 

@@ -1,76 +1,75 @@
-from .outfmt import logger,error_exit
-import subprocess
-# from pylatex import Document, Section, Tabular, NoEscape, Figure, Command
-# from pylatex.utils import bold, escape_latex
-from pathlib import Path
-import numpy as np
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Image, Table, TableStyle, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
 from astropy.time import Time
 
-def elevation_pdf(twilight_times,mpc_code,lunar_illum,fig_path):
+def create_pdf(twilight_times,mpc_code,lunar_illum,pdf_path):
     
-    night = twilight_times['night']
+    night_str = twilight_times['night'].strftime('%Y-%b-%d')
+    night_str_nohyphen = twilight_times['night'].strftime('%Y%m%d')
+    sun_set, sun_rise = twilight_times['sun_set'], twilight_times['sun_rise']
+    twlt_set, twlt_rise = twilight_times['astronomical_set'], twilight_times['astronomical_rise']
 
-    sun_set   = Time(twilight_times['sun_set'])
-    sun_rise  = Time(twilight_times['sun_rise'])
-    twlt_set  = Time(twilight_times['astronomical_set'])
-    twlt_rise = Time(twilight_times['astronomical_rise'])
-    night_length_hours = (sun_rise - sun_set).sec / 3600
-    twilight_length_hours = (twlt_rise - twlt_set).sec / 3600
+    fig_name = f'{pdf_path}/elevation_{night_str_nohyphen}.png'
+    pdf_name = f'{pdf_path}/elevation_{night_str_nohyphen}.pdf'
 
-    date_str_nohyphen = night.strftime('%Y%m%d')
+    doc = SimpleDocTemplate(pdf_name, pagesize=letter,
+                            rightMargin=40, leftMargin=40,
+                            topMargin=60, bottomMargin=40)
+    styles = getSampleStyleSheet()
+    story = []
+       
+    # Calculate time deltas in hours as floats
+    night_length_hours = (Time(sun_rise) - Time(sun_set)).to_value('hour')
+    twilight_length_hours = (Time(twlt_rise) - Time(twlt_set)).to_value('hour')
 
-    fig_path = Path(fig_path)
-    fig_path.mkdir(parents=True, exist_ok=True)
-    tex_filename = fig_path / f"elevation_{date_str_nohyphen}.tex"
+    # If lunar_illum is a percentage as a float or int, no problem
+    # Otherwise, convert if needed:
+    # lunar_illum_float = lunar_illum if isinstance(lunar_illum, (float,int)) else lunar_illum.to_value()
 
-    #Latex setup
-    doc = Document(documentclass='article', document_options='a4paper')
-    doc.packages.append(Command('usepackage', 'geometry'))
-    doc.packages.append(Command('geometry', 'margin=0.5in'))
-    doc.packages.append(Command('usepackage', 'graphicx'))
-    doc.packages.append(Command('usepackage', 'longtable'))
-    doc.packages.append(Command('usepackage', 'fullpage'))
-    doc.packages.append(Command('usepackage', 'caption'))
-    doc.append(NoEscape(r'\captionsetup{belowskip=0pt}'))
-    doc.append(NoEscape(r'\thispagestyle{empty}'))
+    # Add image
+    im = Image(fig_name)
+    im._restrictSize(450, 300)  # max width and height in points
+    story.append(im)
+    story.append(Spacer(1, 12))
 
-    #figure
-    with doc.create(Figure(position='t')) as fig:
-        fig.add_image(str(fig_path / f"elevation_{date_str_nohyphen}.png"), width=NoEscape(r'0.9\textwidth'))
+    info_text = f"""
+    <b>{night_str}</b><br/>
+    MPC code: {mpc_code}<br/>
+    Sunrise-Sunset: {sun_set.strftime('%H:%M')} - {sun_rise.strftime('%H:%M')} UT<br/>
+    Twilight-Twilight: {twlt_set.strftime('%H:%M')} - {twlt_rise.strftime('%H:%M')} UT<br/>
+    Night lasts: {night_length_hours:.1f} / {twilight_length_hours:.1f} hours<br/>
+    Lunar Illumination: {lunar_illum/100:.2f}
+    """
+    story.append(Paragraph(info_text, styles['Normal']))
+    story.append(Spacer(1, 12))
 
-    info_text = (
-        f"\\textbf{{{night.strftime('%Y-%b-%d')}}}\\\\\n"
-        f"MPC code: {mpc_code}\\\\\n"
-        f"Sunrise-Sunset: {sun_set.strftime('%H:%M')} - {sun_rise.strftime('%H:%M')} UT\\\\\n"
-        f"Twilight-Twilight: {twlt_set.strftime('%H:%M')} - {twlt_rise.strftime('%H:%M')} UT\\\\\n"
-        f"Night lasts: {night_length_hours:.1f} / {twilight_length_hours:.1f} hours.\\\\"
-        f"Lunar Illumination: {lunar_illum/100:.2f}\\\\"
-    )
+    # # Prepare table data
+    # data = [['Target', 'RA', 'DEC', 'App_Mag']]
+    # for _, target in twilight_times.iterrows():
+    #     if target['target'] == 'Moon':
+    #         continue
+    #     row = [
+    #         str(target['night']),
+    #         str(target['sun_rise']),
+    #         str(target['sun_set']),
+    #         f"{target['astronomical_rise']:.2f}",
+    #     ]
+    #     data.append(row)
 
-    doc.append(NoEscape(r'\begin{flushleft}'))
-    doc.append(NoEscape(info_text))
-    doc.append(NoEscape(r'\end{flushleft}'))
-    doc.append(NoEscape(r'\centering'))
+    # Create and style table
+    # table = Table(data, colWidths=[70, 60, 60, 60])
+    # style = TableStyle([
+    #     ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+    #     ('TEXTCOLOR',(0, 0), (-1, 0), colors.whitesmoke),
+    #     ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+    #     ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+    #     ('BOTTOMPADDING', (0,0), (-1,0), 8),
+    #     ('GRID', (0,0), (-1,-1), 0.5, colors.black),
+    # ])
+    # table.setStyle(style)
+    # story.append(table)
 
-    #table
-    with doc.create(Tabular('lcccccc')) as table:
-        table.add_hline()
-        table.add_hline()
-        table.add_row(['Target', 'RA', 'DEC', 'App_Mag', 'Rate', 'Vis', 'T-O-M'])
-        table.add_hline()
-        for _, target in df_night_summary.iterrows():
-            if target['target'] == 'Moon':
-                continue
-            table.add_row([
-                escape_latex(str(target['target'])),
-                escape_latex(str(target['RA_str'])),
-                escape_latex(str(target['DEC_str'])),
-                f"{target['Mag']:.2f}",
-                f"{target['rate']:.3f}",
-                f"{target['T_Vis']:.2f}",
-                f"{target['lunar_elong']:.1f}"
-            ])
-        table.add_hline()
-
-    # Generate PDF
-    doc.generate_pdf(fig_path / tex_filename.stem, clean_tex=False, clean=True, compiler='pdflatex', silent=True)
+    # Build PDF
+    doc.build(story)

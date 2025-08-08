@@ -1,5 +1,3 @@
-import argparse
-import logging
 from .outfmt import logger, error_exit
 from .read_inputs import parse_args, validate_args, read_target_list, create_date_list
 from .ephemeris import create_horizon_dataframe, limit_cuts, get_twilight_times

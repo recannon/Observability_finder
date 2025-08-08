@@ -1,14 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from .outfmt import error_exit,logger
-import datetime
 import pandas as pd
 import itertools
-import tempfile
-from pathlib import Path
-# from .latex import elevation_pdf
-import subprocess
-
 
 def marker_list(target_names):
     """
