@@ -3,6 +3,7 @@ from rich.console import Console
 from rich.logging import RichHandler
 from rich.theme import Theme
 import sys
+from pathlib import Path
 
 #Error message output
 def error_exit(message:str):
@@ -16,6 +17,13 @@ def error_exit(message:str):
     """
     logger.error(message)
     sys.exit(1)
+
+def df2csv(df,csv,base_name,file_name,contents):
+    # Save csv in output file
+    output_path = Path(f'./{base_name}{file_name}').resolve()
+    df.to_csv(output_path)
+    logger.info(f"{contents} saved to {output_path}")
+    return
 
 custom_theme = Theme({
     'logging.level.debug': 'green',

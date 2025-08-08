@@ -34,9 +34,13 @@ def make_elevation_charts_pdf(eph_cut, twilight_list, target_plot_info, elevatio
             eph_night = eph_cut[mask]        
             lunar_illum = eph_night['lunar_illum'].median()
             
-            # Makes summary for this target on this night
+            # Makes summary for this target on this night            
+            # summary_df = (eph_night.groupby('target', group_keys=False, include_groups=False)
+            #               .apply(summarize_target, row).reset_index(drop=True))
             summary_df = eph_night.groupby('target').apply(summarize_target,row).reset_index(drop=True)
+            
             summary_df["lunar_illum"] = lunar_illum
+            summary_df = summary_df[summary_df['target'] != 'Moon']
             summary_list.append(summary_df)
             
             # Makes fig for each night
@@ -53,10 +57,10 @@ def make_elevation_charts_pdf(eph_cut, twilight_list, target_plot_info, elevatio
             for page in reader.pages:
                 writer.add_page(page)
 
-        output_path = "./" + base_out_name + "elevation.pdf"
+        output_path = Path(f"./{base_out_name}elevation.pdf")
         with open(output_path, "wb") as f_out:
             writer.write(f_out)
-        logger.info(f"Elevation charts saved to {output_path}")
+        logger.info(f"Elevation charts saved to {output_path.resolve()}")
 
     eph_summary = pd.concat(summary_list)
 
