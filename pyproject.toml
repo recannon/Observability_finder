@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
  
 [project]
 name = "pyObsFind"
-version = "0.3.0"
+version = "0.4.0"
 description = "Package to find when solar system objects are observable"
 readme = "README.md" 
 license = {text="MIT"}
@@ -19,4 +19,6 @@ dependencies = [
  "rich",
  "pylatex",
  "ephem",
+ "pypdf",
+ "reportlab",
 ]

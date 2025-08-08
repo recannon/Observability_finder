@@ -6,4 +6,5 @@ astroquery
 rich
 pylatex
 ephem
-pylatex
+pypdf
+reportlab
