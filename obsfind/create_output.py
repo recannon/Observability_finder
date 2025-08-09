@@ -95,6 +95,7 @@ def summarize_target(group,twilight_info=None,tar_name=None):
         'RA': 'median',
         'DEC': 'median',
         'lunar_elong': 'median',
+        'duration_hours': 'median',
     })
 
     target = tar_name

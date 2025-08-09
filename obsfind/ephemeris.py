@@ -144,10 +144,11 @@ def limit_cuts(eph_df, mag_limit, elevation_limit, t_vis_limit):
     above_elev   = eph_df_cut[eph_df_cut['elevation'] > elevation_limit]    
     t_vis_counts = above_elev.groupby(['target', 'night']).size()          
     t_vis_dur    = t_vis_counts.mul(0.25).reset_index(name='duration_hours')
-    targets_visible = t_vis_dur[t_vis_dur['duration_hours'] >= t_vis_limit][['target', 'night']]
+    targets_visible = t_vis_dur[t_vis_dur['duration_hours'] >= t_vis_limit]
 
     # Filter not visible targets
-    eph_df_cut = eph_df_cut.merge(targets_visible, on=['target', 'night'], how='inner')
+    eph_df_cut = eph_df_cut.merge(targets_visible[['target', 'night', 'duration_hours']], 
+                                  on=['target', 'night'], how='inner')
 
     return eph_df_cut
 

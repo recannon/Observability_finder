@@ -2,7 +2,7 @@ from pathlib import Path
 from .outfmt import logger, df2csv
 from .read_inputs import parse_args, validate_args, read_target_list, create_date_list
 from .ephemeris import create_horizon_dataframe, limit_cuts, get_twilight_times
-from .plotting import marker_list
+from .plotting import marker_list, summary_chart
 from .create_output import make_elevation_charts_pdf
 
 
@@ -25,6 +25,8 @@ def main():
     night_summaries = make_elevation_charts_pdf(eph_cut, twilight_list, target_plot_info, args.elevation_limit, args.mpc_code, args.output_base)
     
     df2csv(night_summaries,args.output_base,'summary.csv','Summary')
+    
+    summary_chart(night_summaries,target_plot_info,fig_path='./temp')
     
     print('yay')
     return

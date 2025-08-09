@@ -104,3 +104,88 @@ def elevation_chart(twilight_times, eph_night, target_plot_info, elevation_limit
     plt.close()
 
     return
+
+
+
+def summary_chart(night_summaries,target_plot_info,target=False,fig_path='./temp_summary'):
+    '''
+    Creates and saves a summary plot in ./Nights-summary-png for this night
+
+    Input    
+        df_summary_all : pd.DataFrame object output from the concatenation of observabilityCreateNightSummary outputs
+        target_list    : pd.DataFrame with three columns - 'targets' target names, and 'markers' and 'colours' for how they should be plotted.
+        target         : name of the target to be plotted. if False, plot all targets
+        show_plot      : Will output the figure for this night.
+        fig_path       : Folder directory within which you have set up Night-Charts and Night-summary directories
+    
+    '''
+
+    #File names and plotting targets
+    if target:
+        targets_to_plot = [target]
+        file_name = f"summary_{target.replace(' ','').replace('C/','C')}"
+    else:
+        targets_to_plot = night_summaries['target'].unique()
+        file_name = "all_tar_summary"
+
+    #Create figure and plot
+    fig, axes = plt.subplots(nrows=3,ncols=2,figsize=(28,30))
+    for obj in targets_to_plot:
+        
+        tar_summary = night_summaries[night_summaries.target==obj]
+
+        # if obj == 'Moon':
+            # eph_night_tar.plot(x='datetime_str', y='elevation',
+                            # label='Moon', ax=ax,
+                            # linestyle='--', color='black', marker='', lw=7, alpha=0.75)
+        # else:
+        colour = target_plot_info[target_plot_info['targets']==obj]['colours'].values[0]
+        marker = target_plot_info[target_plot_info['targets']==obj]['markers'].values[0]
+        
+        date = tar_summary['datetime_str']
+        axes[0,0].plot(date, tar_summary.duration_hours,   label=obj, marker=marker, color=colour, linewidth=4, markersize=15)
+        axes[1,0].plot(date, tar_summary.Mag,       label=obj, marker=marker, color=colour, linewidth=4, markersize=15)
+        axes[2,0].plot(date, tar_summary.alpha,   label=obj, marker=marker, color=colour, linewidth=4, markersize=15)
+        axes[0,1].plot(date, tar_summary.Sky_motion,    label=obj, marker=marker, color=colour, linewidth=4, markersize=15)
+        axes[1,1].plot(date, tar_summary.RA,  label=obj, marker=marker, color=colour, linewidth=4, markersize=15)
+        axes[2,1].plot(date, tar_summary.DEC, label=obj, marker=marker, color=colour, linewidth=4, markersize=15)
+
+    #Format plot
+    ylabels = [ 'Time visible / Hours',
+                'Rate of motion / arcsec per min',
+                'Estimated magnitude (V/Tmag)',
+                'Apparent RA / degrees',
+                'Phase angle / degrees',
+                'Apparent DEC / degrees']
+    for ax, ylab in zip(axes.flatten(),ylabels):
+        for spn in ax.spines: #Black edges
+            ax.spines[spn].set_linewidth(5)
+            ax.spines[spn].set_color('black')
+
+        # if len(df_summary_all.date_str) > 60:
+            # xticks = [date for date in np.unique(df_summary_all['date_str']) if date[-2:]=='01']
+        # else:
+            # xticks = np.unique(df_summary_all['date_str'])
+
+        # ax.xaxis.set_ticks(xticks)
+        ax.xaxis.set_ticks_position('both')
+        ax.yaxis.set_ticks_position('both')
+        ax.xaxis.set_tick_params(direction='in', labelsize=30, which='both',color='black',length=10,width=5)
+        ax.yaxis.set_tick_params(direction='in', labelsize=30, which='both',color='black',length=10,width=5)
+        ax.set_ylabel(f'{ylab}',fontsize=30,labelpad=10)
+        ax.grid(which='both',axis='both')
+        plt.gca().invert_yaxis()
+        plt.tight_layout()
+        
+    axes[2,0].set_xlabel('Date',fontsize=30,labelpad=10)
+    axes[2,1].set_xlabel('Date',fontsize=30,labelpad=10)
+
+    if not target: #Do not plot legend if individual target plot
+        fig.legend(np.unique(night_summaries['target']), loc='lower center', bbox_to_anchor=(0.5, 1.00), ncol=2,prop={'size':30})
+
+    fig.subplots_adjust(wspace=0.2, hspace=0.1)
+    # fig.savefig(f'{fig_path}/Nights-summary-png/{file_name}.png',bbox_inches='tight')
+    fig.savefig(f'{fig_path}/{file_name}.png',bbox_inches='tight')
+
+
+    plt.close()
