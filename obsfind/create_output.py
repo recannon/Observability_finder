@@ -71,6 +71,7 @@ def make_elevation_charts_pdf(eph_cut, twilight_list, target_plot_info, elevatio
         logger.info(f"Elevation charts saved to {output_path.resolve()}")
 
     eph_summary = pd.concat(summary_list)
+    eph_summary = eph_summary.sort_values(by=['target', 'datetime_str'])
 
     return eph_summary
 
