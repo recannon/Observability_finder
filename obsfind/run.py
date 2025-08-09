@@ -18,11 +18,13 @@ def main():
     eph_df = create_horizon_dataframe(twilight_list, args.mpc_code, target_list)
     eph_cut = limit_cuts(eph_df, args.mag_limit, args.elevation_limit, args.time_visible_limit)
 
-    df2csv(eph_cut,eph_cut,args.output_base,'csv_output.csv','Ephemeris')
+    df2csv(eph_cut,args.output_base,'eph.csv','Ephemeris')
         
     target_plot_info = marker_list(eph_cut.target.unique())
     
     night_summaries = make_elevation_charts_pdf(eph_cut, twilight_list, target_plot_info, args.elevation_limit, args.mpc_code, args.output_base)
+    
+    df2csv(night_summaries,args.output_base,'summary.csv','Summary')
     
     print('yay')
     return

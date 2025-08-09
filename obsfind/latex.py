@@ -71,10 +71,10 @@ def create_pdf(twilight_times,summary_df,mpc_code,pdf_path):
     decimal_format = {
         'RA_str': '{}',         # Already a string, no formatting needed
         'DEC_str': '{}',        # Already a string, no formatting needed
-        'Mag': '{:.1f}',        # 2 decimal places
-        'Sky_motion': '{:.3f}', # 2 decimal places
-        'alpha': '{:.1f}',      # 2 decimal places
-        'lunar_elong': '{:.2f}',# 1 decimal place
+        'Mag': '{:.2f}',        # 2 decimal places
+        'Sky_motion': '{:.2f}', # 2 decimal places
+        'alpha': '{:.1f}',      # 1 decimal places
+        'lunar_elong': '{:.2f}',# 2 decimal place
         'target': '{}'          # string, no formatting
     }
 
@@ -86,7 +86,7 @@ def create_pdf(twilight_times,summary_df,mpc_code,pdf_path):
         formatted_row = []
         for col in columns:
             val = row[col]
-            fmt = decimal_format.get(col, '{}')  # default to string format if not specified
+            fmt = decimal_format.get(col, '{}')
             try:
                 formatted_val = fmt.format(val)
             except Exception:
@@ -94,38 +94,20 @@ def create_pdf(twilight_times,summary_df,mpc_code,pdf_path):
             formatted_row.append(formatted_val)
         data.append(formatted_row)
         
-    table = Table(data, repeatRows=1)  # repeat header on each page
-    style = TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),       # Header background
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),  # Header text color
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),    # Header font
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.black),      # Grid lines
-    ])
-    
+    table = Table(data, repeatRows=1)
     
     style = TableStyle([
-        # Header
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
         ('FONTSIZE', (0, 0), (-1, 0), 10),
         ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
         ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
         ('TOPPADDING', (0, 0), (-1, 0), 6),
-
-        # Body font
         ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
         ('FONTSIZE', (0, 1), (-1, -1), 10),
-
-        # Borders (thin lines like LaTeX)
         ('LINEBELOW', (0, 0), (-1, 0), 0.5, colors.black),  # under header
         ('LINEABOVE', (0, 0), (-1, 0), 0.5, colors.black),  # top rule
         ('LINEBELOW', (0, -1), (-1, -1), 0.5, colors.black),# bottom rule
-
-        # Alignment for all cells
         ('ALIGN', (0, 1), (-1, -1), 'CENTER'),
-
-        # Cell padding
         ('LEFTPADDING', (0, 0), (-1, -1), 6),
         ('RIGHTPADDING', (0, 0), (-1, -1), 6),
         ('TOPPADDING', (0, 0), (-1, -1), 2),
