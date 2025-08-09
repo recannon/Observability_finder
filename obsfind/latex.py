@@ -1,7 +1,7 @@
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Image, Table, TableStyle, Spacer
-from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from astropy.time import Time
 from .outfmt import logger
 
@@ -59,7 +59,12 @@ def create_pdf(twilight_times,summary_df,mpc_code,pdf_path):
     Night lasts: {night_length_hours:.1f} / {twilight_length_hours:.1f} hours<br/>
     Lunar Illumination: {lunar_illum_val/100:.2f}
     """
-    story.append(Paragraph(info_text, styles['Normal']))
+    # Create a custom style based on 'Normal'
+    text_style = ParagraphStyle(
+        'CustomNormal',
+        parent=styles['Normal'],
+        fontName='Helvetica')
+    story.append(Paragraph(info_text, text_style))
     story.append(Spacer(1, 12))
 
     #===Table===
@@ -98,6 +103,35 @@ def create_pdf(twilight_times,summary_df,mpc_code,pdf_path):
         ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.black),      # Grid lines
     ])
+    
+    
+    style = TableStyle([
+        # Header
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
+        ('TOPPADDING', (0, 0), (-1, 0), 6),
+
+        # Body font
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 10),
+
+        # Borders (thin lines like LaTeX)
+        ('LINEBELOW', (0, 0), (-1, 0), 0.5, colors.black),  # under header
+        ('LINEABOVE', (0, 0), (-1, 0), 0.5, colors.black),  # top rule
+        ('LINEBELOW', (0, -1), (-1, -1), 0.5, colors.black),# bottom rule
+
+        # Alignment for all cells
+        ('ALIGN', (0, 1), (-1, -1), 'CENTER'),
+
+        # Cell padding
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+        ('TOPPADDING', (0, 0), (-1, -1), 2),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
+    ])
+    
     table.setStyle(style)
     story.append(table)
 
