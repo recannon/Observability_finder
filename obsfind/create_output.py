@@ -6,7 +6,8 @@ from pypdf import PdfWriter, PdfReader
 from astropy.coordinates import SkyCoord
 import astropy.units as u
 import pandas as pd
-from .outfmt import logger
+from .outfmt import logger, console
+from rich.progress import Progress
 
 def make_elevation_charts_pdf(eph_cut, twilight_list, target_plot_info, elevation_limit, mpc_code, base_out_name=''):
     """
@@ -28,33 +29,37 @@ def make_elevation_charts_pdf(eph_cut, twilight_list, target_plot_info, elevatio
     with tempfile.TemporaryDirectory() as tmpdir:
         tmpdir_path = Path(tmpdir)
         
-        for i,row in twilight_list.iterrows():
-        
-            mask = eph_cut['night'] == row['night']
-            eph_night = eph_cut[mask]        
-            lunar_illum = eph_night['lunar_illum'].median()
+        with Progress(console=console, transient=True) as pb:
+            t1 = pb.add_task('Making nightly plots', total=len(twilight_list))
+            for i,row in twilight_list.iterrows():
             
-            # Makes summary for this target on this night            
-            # summary_df = (eph_night.groupby('target', group_keys=False, include_groups=False)
-            #               .apply(summarize_target, row).reset_index(drop=True))
-            # summary_df = eph_night.groupby('target').apply(summarize_target,row).reset_index(drop=True)
+                logger.debug(f'Processing {row["night"]}')
             
-            summary_df = (
-    eph_night
-    .groupby("target")[eph_night.columns.difference(["target"])]
-    .apply(lambda df: summarize_target(df, row, tar_name=df.name))
-    .reset_index(drop=True)
-)
-            
-            summary_df["lunar_illum"] = lunar_illum
-            summary_df = summary_df[summary_df['target'] != 'Moon']
-            summary_df = summary_df.sort_values(by='RA_str')
-            summary_list.append(summary_df)
-            
-            # Makes fig for each night
-            elevation_chart(row,eph_night,target_plot_info,elevation_limit,show_plot=False,fig_path=tmpdir_path)
-            # Makes pdf for each night
-            create_pdf(row,summary_df,mpc_code,pdf_path=tmpdir_path)
+                mask = eph_cut['night'] == row['night']
+                eph_night = eph_cut[mask]
+                
+                no_targets_visible = len(eph_night.targetname.unique())
+                logger.debug(f'{no_targets_visible} targets visible')
+                        
+                summary_df = (
+                    eph_night
+                    .groupby("target")[eph_night.columns.difference(["target"])]
+                    .apply(lambda df: summarize_target(df, row, tar_name=df.name))
+                    .reset_index(drop=True)
+                )
+                
+                # summary_df["lunar_illum"] = lunar_illum
+                summary_df["lunar_illum"] = row['lunar_illum']
+                summary_df = summary_df[summary_df['target'] != 'Moon']
+                summary_df = summary_df.sort_values(by='RA_str')
+                summary_list.append(summary_df)
+                
+                # Makes fig for each night
+                elevation_chart(row,eph_night,target_plot_info,elevation_limit,show_plot=False,fig_path=tmpdir_path)
+                # Makes pdf for each night
+                create_pdf(row,summary_df,mpc_code,pdf_path=tmpdir_path)
+
+                pb.update(t1,advance=1)
     
         #Mergers pdfs together
         pdf_name_format = "elevation_????????.pdf"

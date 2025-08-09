@@ -15,8 +15,8 @@ def main():
     twilight_list = get_twilight_times(args.mpc_code,date_list)
 
     # Create dataframe and apply cuts
-    eph_df = create_horizon_dataframe(twilight_list, args.mpc_code, target_list)
-    eph_cut = limit_cuts(eph_df, args.mag_limit, args.elevation_limit, args.time_visible_limit)
+    eph_df, twilight_list = create_horizon_dataframe(twilight_list, args.mpc_code, target_list)
+    eph_cut, twilight_list = limit_cuts(eph_df, args.mag_limit, args.elevation_limit, args.time_visible_limit, twilight_list)
 
     df2csv(eph_cut,args.output_base,'eph.csv','Ephemeris')
         

@@ -28,7 +28,9 @@ def create_pdf(twilight_times,summary_df,mpc_code,pdf_path):
     fig_name = f'{pdf_path}/elevation_{night_str_nohyphen}.png'
     pdf_name = f'{pdf_path}/elevation_{night_str_nohyphen}.pdf'
 
-    lunar_illum_val = summary_df['lunar_illum'].iloc[0] #They're all the same anyway
+    # lunar_illum_val = summary_df['lunar_illum'].iloc[0] #They're all the same anyway
+    lunar_illum_val = twilight_times['lunar_illum']
+
 
     doc = SimpleDocTemplate(pdf_name, pagesize=letter,
                             rightMargin=20, leftMargin=20,

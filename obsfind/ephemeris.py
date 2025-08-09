@@ -48,7 +48,6 @@ def create_horizon_dataframe(twilight_times:pd.DataFrame, mpc_code:str, target_l
     moon_eph = call_horizons_moon(mpc_code,epochs)
     eph_list.append(moon_eph)
 
-    # Concatenate DataFrames
     eph_all_targets = pd.concat(eph_list)
     
     # Create elevation (horizon has airmass)
@@ -65,12 +64,16 @@ def create_horizon_dataframe(twilight_times:pd.DataFrame, mpc_code:str, target_l
         mask = (eph_all_targets['datetime'] >= date['sun_set']) & (eph_all_targets['datetime'] <= date['sun_rise'])
         eph_all_targets.loc[mask, 'night'] = date['night']
         
+        # Get lunar_illum for the Moon in this time range
+        moon_vals = eph_all_targets.loc[mask & (eph_all_targets['target'] == 'Moon'), 'lunar_illum']
+        twilight_times.loc[i, 'lunar_illum'] = moon_vals.median()
+        
     # Drop rows not assigned to any night
     eph_all_targets = eph_all_targets.dropna(subset=['night'])
         
     eph_all_targets['night'] = pd.to_datetime(eph_all_targets['night'])    
         
-    return eph_all_targets
+    return eph_all_targets, twilight_times
 
 
 def call_horizons_moon(mpc_code:str,epochs:dict,obj_name='301'):
@@ -120,7 +123,7 @@ def call_horizons_obj(obj_name:str, mpc_code:str, epochs:dict) -> pd.DataFrame:
     return eph
 
 
-def limit_cuts(eph_df, mag_limit, elevation_limit, t_vis_limit):
+def limit_cuts(eph_df, mag_limit, elevation_limit, t_vis_limit, twilight_times):
     """
     Applies magnitude, elevation, and time visible limit cuts to the ephemeris DataFrame.
     Inputs
@@ -150,7 +153,27 @@ def limit_cuts(eph_df, mag_limit, elevation_limit, t_vis_limit):
     eph_df_cut = eph_df_cut.merge(targets_visible[['target', 'night', 'duration_hours']], 
                                   on=['target', 'night'], how='inner')
 
-    return eph_df_cut
+    #Filter out nights with 0 targets, or just the moon
+    all_nights = set(twilight_times['night'])
+    nights_with_targets = set(eph_df_cut['night'])
+    nights_with_zero_targets = all_nights - nights_with_targets
+
+    # If target visible == moon
+    targets_per_night = eph_df_cut.groupby('night')['target'].agg(set)
+    nights_only_moon = targets_per_night[
+        targets_per_night.apply(lambda s: s == {'Moon'})
+    ].index
+
+    # Combine all nights to drop
+    nights_to_drop = set(nights_only_moon) | nights_with_zero_targets
+
+    # Drop those nights from both DataFrames
+    logger.info(f'Twilight times was {len(twilight_times)} long')
+    twilight_times = twilight_times[~twilight_times['night'].isin(nights_to_drop)]
+    eph_df_cut = eph_df_cut[~eph_df_cut['night'].isin(nights_to_drop)]
+    logger.info(f'Twilight times is {len(twilight_times)} long')
+
+    return eph_df_cut, twilight_times
 
 
 def get_twilight_times(mpc_code:str, date_list:list[Time]) -> dict[datetime.datetime]:

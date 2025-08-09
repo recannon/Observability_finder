@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import itertools
 
+
 def marker_list(target_names):
     """
     Creates a list of markers and colours for plotting targets.
