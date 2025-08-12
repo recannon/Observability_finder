@@ -121,6 +121,24 @@ def summarize_target(group,twilight_info=None,tar_name=None):
     })
     
 def make_summary_charts_pdf(night_summaries, target_plot_info, base_out_name=''):
+    """
+    Generates summary charts for all targets and compiles them into a PDF.
+
+    Inputs
+        night_summaries  : DataFrame containing nightly summary data for each target,
+                        used to generate the plots.
+        target_plot_info : DataFrame mapping targets to plot colours and markers.
+                        Must contain 'targets', 'colours', and 'markers' columns.
+        base_out_name    : (optional) String prefix for the output PDF filename.
+
+    Output
+        Saves a PDF file in the current directory named '<base_out_name>summary.pdf',
+        containing:
+            - A first page with the all-target summary chart.
+            - One page per target (excluding the Moon) with its corresponding chart.
+        Temporary PNG plot files are created in a temporary directory and deleted
+        automatically after the PDF is built.
+    """
     
     with tempfile.TemporaryDirectory() as tmpdir:
         tmpdir_path = Path(tmpdir)

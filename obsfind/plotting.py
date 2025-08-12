@@ -110,18 +110,28 @@ def elevation_chart(twilight_times, eph_night, target_plot_info, elevation_limit
 
 
 def summary_chart(night_summaries,target_plot_info,target=False,fig_path='./temp_summary'):
-    '''
-    Creates and saves a summary plot in ./Nights-summary-png for this night
+    """
+    Creates and saves a multi-panel summary chart for one or more targets.
 
-    Input    
-        df_summary_all : pd.DataFrame object output from the concatenation of observabilityCreateNightSummary outputs
-        target_list    : pd.DataFrame with three columns - 'targets' target names, and 'markers' and 'colours' for how they should be plotted.
-        target         : name of the target to be plotted. if False, plot all targets
-        show_plot      : Will output the figure for this night.
-        fig_path       : Folder directory within which you have set up Night-Charts and Night-summary directories
+    Inputs
+        night_summaries  : DataFrame containing nightly summary data for each target,
+                        including columns such as 'datetime_str', 'duration_hours',
+                        'Mag', 'alpha', 'Sky_motion', 'RA', and 'DEC'.
+        target_plot_info : DataFrame mapping targets to plot colours and markers.
+                        Must contain 'targets', 'colours', and 'markers' columns.
+        target           : (optional) Specific target name to plot. If provided,
+                        only this target will be plotted; otherwise all targets
+                        in night_summaries are included.
+        fig_path         : Directory path to save the output figure PNG file.
+
+    Output
+        Saves a PNG image in fig_path containing:
+            - Six subplots showing time visible, rate of motion, magnitude, RA,
+            phase angle, and DEC as functions of date.
+            - For all-target plots: includes a legend above the subplots.
+            - For single-target plots: no legend is shown.
+    """
     
-    '''
-
     #File names and plotting targets
     if target:
         targets_to_plot = [target]

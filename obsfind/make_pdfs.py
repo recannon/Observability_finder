@@ -6,7 +6,6 @@ from astropy.time import Time
 from .outfmt import logger
 
 def create_elevation_pdf(twilight_times,summary_df,mpc_code,pdf_path):
-
     """
     Creates a PDF with elevation chart and summary table for a given night.
 
@@ -123,6 +122,21 @@ def create_elevation_pdf(twilight_times,summary_df,mpc_code,pdf_path):
     return
 
 def create_summary_pdf(pdf_name,tmpdir_path):
+    """
+    Creates a PDF containing summary plots for all targets.
+
+    Inputs
+        pdf_name    : Path to save the output PDF file.
+        tmpdir_path : Path to the temporary directory containing summary plot images.
+                    Must contain 'all_tar_summary.png' for the overall summary, and
+                    one or more 'summary_*' images for individual targets.
+
+    Output
+        Saves a PDF file at the specified location, with:
+            - An overall summary plot on the first page.
+            - One page per target containing the target name (bold, centered) and its
+            corresponding summary plot.
+    """
     
     doc = SimpleDocTemplate(str(pdf_name), pagesize=letter,
                             rightMargin=20, leftMargin=20,
