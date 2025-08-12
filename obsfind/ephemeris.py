@@ -48,7 +48,8 @@ def create_horizon_dataframe(twilight_times:pd.DataFrame, mpc_code:str, target_l
     moon_eph = call_horizons_moon(mpc_code,epochs)
     eph_list.append(moon_eph)
 
-    eph_list = [e for e in eph_list if isinstance(e, pd.DataFrame) and not e.empty]
+    # eph_list = [e for e in eph_list if isinstance(e, pd.DataFrame) and not e.empty]
+    eph_list = [df.dropna(axis=1, how='all') if isinstance(df, pd.DataFrame) else df for df in eph_list]
     eph_all_targets = pd.concat(eph_list)
         
     # Create elevation (horizon has airmass)
