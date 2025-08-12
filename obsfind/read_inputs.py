@@ -9,10 +9,10 @@ from .outfmt import logger, error_exit
 
 
 # Configure default parameters
-DEFAULT_MPC_CODE    = '809'      # Observatory MPC code
+DEFAULT_MPC_CODE        = '809'  # Observatory MPC code
 DEFAULT_ELEVATION_LIMIT = 30     # Minimum elevation angle (degrees)
 DEFAULT_TIME_VISIBLE    = 1      # Minimum time visible (hours)
-DEFAULT_MAG_LIMIT       = 25     # Maximum magnitude limit
+DEFAULT_MAG_LIMIT       = 22     # Maximum magnitude limit
 
 
 def parse_args() -> argparse.Namespace:

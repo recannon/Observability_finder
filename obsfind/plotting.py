@@ -70,6 +70,12 @@ def elevation_chart(twilight_times, eph_night, target_plot_info, elevation_limit
                             label=obj, ax=ax,
                             marker=marker, color=colour, markersize=8)
     
+    #Check if times actually exist (Won't if never sets)
+    set_list = ['sun_set', 'civil_set', 'nautical_set', 'astronomical_set']
+    twilight_times[set_list] = twilight_times[set_list].apply(pd.to_datetime).ffill()
+    rise_list = ['sun_rise', 'civil_rise', 'nautical_rise', 'astronomical_rise']
+    twilight_times[rise_list] = twilight_times[rise_list].apply(pd.to_datetime).ffill()
+
     # Format plot
     ax.axvspan(twilight_times['sun_set'].isoformat(), twilight_times['civil_set'].isoformat(), alpha=.30)
     ax.axvspan(twilight_times['civil_set'].isoformat(), twilight_times['nautical_set'].isoformat(), alpha=.20)
