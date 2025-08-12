@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import itertools
-
+import matplotlib.dates as mdates
 
 def marker_list(target_names):
     """
@@ -130,6 +130,7 @@ def summary_chart(night_summaries,target_plot_info,target=False,fig_path='./temp
         file_name = "all_tar_summary"
 
     #Create figure and plot
+    date_fmt = mdates.DateFormatter('%m-%d')
     fig, axes = plt.subplots(nrows=3,ncols=2,figsize=(28,30))
     for obj in targets_to_plot:
         
@@ -143,13 +144,14 @@ def summary_chart(night_summaries,target_plot_info,target=False,fig_path='./temp
         colour = target_plot_info[target_plot_info['targets']==obj]['colours'].values[0]
         marker = target_plot_info[target_plot_info['targets']==obj]['markers'].values[0]
         
-        date = tar_summary['datetime_str']
-        axes[0,0].plot(date, tar_summary.duration_hours,   label=obj, marker=marker, color=colour, linewidth=4, markersize=15)
-        axes[1,0].plot(date, tar_summary.Mag,       label=obj, marker=marker, color=colour, linewidth=4, markersize=15)
-        axes[2,0].plot(date, tar_summary.alpha,   label=obj, marker=marker, color=colour, linewidth=4, markersize=15)
-        axes[0,1].plot(date, tar_summary.Sky_motion,    label=obj, marker=marker, color=colour, linewidth=4, markersize=15)
-        axes[1,1].plot(date, tar_summary.RA,  label=obj, marker=marker, color=colour, linewidth=4, markersize=15)
-        axes[2,1].plot(date, tar_summary.DEC, label=obj, marker=marker, color=colour, linewidth=4, markersize=15)
+        step = 3
+        date = tar_summary['datetime_str'][::step]
+        axes[0,0].plot(date, tar_summary.duration_hours[::step],   label=obj, marker=marker, color=colour, linewidth=4, markersize=15)
+        axes[1,0].plot(date, tar_summary.Mag[::step],       label=obj, marker=marker, color=colour, linewidth=4, markersize=15)
+        axes[2,0].plot(date, tar_summary.alpha[::step],   label=obj, marker=marker, color=colour, linewidth=4, markersize=15)
+        axes[0,1].plot(date, tar_summary.Sky_motion[::step],    label=obj, marker=marker, color=colour, linewidth=4, markersize=15)
+        axes[1,1].plot(date, tar_summary.RA[::step],  label=obj, marker=marker, color=colour, linewidth=4, markersize=15)
+        axes[2,1].plot(date, tar_summary.DEC[::step], label=obj, marker=marker, color=colour, linewidth=4, markersize=15)
 
     #Format plot
     ylabels = [ 'Time visible / Hours',
@@ -159,6 +161,8 @@ def summary_chart(night_summaries,target_plot_info,target=False,fig_path='./temp
                 'Phase angle / degrees',
                 'Apparent DEC / degrees']
     for ax, ylab in zip(axes.flatten(),ylabels):
+        ax.xaxis.set_major_formatter(date_fmt)
+        
         for spn in ax.spines: #Black edges
             ax.spines[spn].set_linewidth(5)
             ax.spines[spn].set_color('black')

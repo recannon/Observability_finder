@@ -168,10 +168,10 @@ def limit_cuts(eph_df, mag_limit, elevation_limit, t_vis_limit, twilight_times):
     nights_to_drop = set(nights_only_moon) | nights_with_zero_targets
 
     # Drop those nights from both DataFrames
-    logger.info(f'Twilight times was {len(twilight_times)} long')
+    old_length = len(twilight_times)
     twilight_times = twilight_times[~twilight_times['night'].isin(nights_to_drop)]
     eph_df_cut = eph_df_cut[~eph_df_cut['night'].isin(nights_to_drop)]
-    logger.info(f'Twilight times is {len(twilight_times)} long')
+    logger.debug(f'Twilight times reduced from {old_length} to {len(twilight_times)} days')
 
     return eph_df_cut, twilight_times
 
