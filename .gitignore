@@ -1,7 +1,5 @@
 __pycache__/
-OLD/
-*csv
-*pdf
 .DS_Store
 pyObsFind.egg-info
 docs/_build
+dist/

@@ -48,9 +48,10 @@ def create_horizon_dataframe(twilight_times:pd.DataFrame, mpc_code:str, target_l
     moon_eph = call_horizons_moon(mpc_code,epochs)
     eph_list.append(moon_eph)
 
-    # Concatenate DataFrames
+    # eph_list = [e for e in eph_list if isinstance(e, pd.DataFrame) and not e.empty]
+    eph_list = [df.dropna(axis=1, how='all') if isinstance(df, pd.DataFrame) else df for df in eph_list]
     eph_all_targets = pd.concat(eph_list)
-    
+        
     # Create elevation (horizon has airmass)
     eph_all_targets = eph_all_targets.reset_index(drop=True)
     eph_all_targets['elevation'] = 90 - np.rad2deg(np.arccos(1 / eph_all_targets['airmass']))
@@ -65,12 +66,16 @@ def create_horizon_dataframe(twilight_times:pd.DataFrame, mpc_code:str, target_l
         mask = (eph_all_targets['datetime'] >= date['sun_set']) & (eph_all_targets['datetime'] <= date['sun_rise'])
         eph_all_targets.loc[mask, 'night'] = date['night']
         
+        # Get lunar_illum for the Moon in this time range
+        moon_vals = eph_all_targets.loc[mask & (eph_all_targets['target'] == 'Moon'), 'lunar_illum']
+        twilight_times.loc[i, 'lunar_illum'] = moon_vals.median()
+        
     # Drop rows not assigned to any night
     eph_all_targets = eph_all_targets.dropna(subset=['night'])
         
     eph_all_targets['night'] = pd.to_datetime(eph_all_targets['night'])    
         
-    return eph_all_targets
+    return eph_all_targets, twilight_times
 
 
 def call_horizons_moon(mpc_code:str,epochs:dict,obj_name='301'):
@@ -87,14 +92,12 @@ def call_horizons_moon(mpc_code:str,epochs:dict,obj_name='301'):
     """
     
     obj_h = Horizons(id=str(obj_name), location=mpc_code, epochs=epochs)
-    try: 
-        # Fails if no ephemerides meet the criteria (I.E, not present in the sky during this time)
-        eph = obj_h.ephemerides(quantities='1,8,9,24,25,47').to_pandas()
-        eph['target'] = 'Moon'
-        eph['datetime_str'] = pd.to_datetime(eph['datetime_str'], format='%Y-%b-%d %H:%M')
-    except:
-        logger.debug(f'Cannot see {obj_name}')
+    # Won't fail as not applying elevation cuts
+    eph = obj_h.ephemerides(quantities='1,8,9,24,25,47').to_pandas()
+    eph['target'] = 'Moon'
+    eph['datetime_str'] = pd.to_datetime(eph['datetime_str'], format='%Y-%b-%d %H:%M')
     return eph
+
 
 def call_horizons_obj(obj_name:str, mpc_code:str, epochs:dict) -> pd.DataFrame:
     """
@@ -114,13 +117,14 @@ def call_horizons_obj(obj_name:str, mpc_code:str, epochs:dict) -> pd.DataFrame:
         eph = obj_h.ephemerides(skip_daylight=True, quantities='1,8,9,24,25,47').to_pandas()
         eph['target'] = obj_name
         eph['datetime_str'] = pd.to_datetime(eph['datetime_str'], format='%Y-%b-%d %H:%M')
+        return eph
     except:
         logger.debug(f'Cannot see {obj_name}')
+        return pd.DataFrame()
     
-    return eph
 
 
-def limit_cuts(eph_df, mag_limit, elevation_limit, t_vis_limit):
+def limit_cuts(eph_df, mag_limit, elevation_limit, t_vis_limit, twilight_times):
     """
     Applies magnitude, elevation, and time visible limit cuts to the ephemeris DataFrame.
     Inputs
@@ -144,12 +148,33 @@ def limit_cuts(eph_df, mag_limit, elevation_limit, t_vis_limit):
     above_elev   = eph_df_cut[eph_df_cut['elevation'] > elevation_limit]    
     t_vis_counts = above_elev.groupby(['target', 'night']).size()          
     t_vis_dur    = t_vis_counts.mul(0.25).reset_index(name='duration_hours')
-    targets_visible = t_vis_dur[t_vis_dur['duration_hours'] >= t_vis_limit][['target', 'night']]
+    targets_visible = t_vis_dur[t_vis_dur['duration_hours'] >= t_vis_limit]
 
     # Filter not visible targets
-    eph_df_cut = eph_df_cut.merge(targets_visible, on=['target', 'night'], how='inner')
+    eph_df_cut = eph_df_cut.merge(targets_visible[['target', 'night', 'duration_hours']], 
+                                  on=['target', 'night'], how='inner')
 
-    return eph_df_cut
+    #Filter out nights with 0 targets, or just the moon
+    all_nights = set(twilight_times['night'])
+    nights_with_targets = set(eph_df_cut['night'])
+    nights_with_zero_targets = all_nights - nights_with_targets
+
+    # If target visible == moon
+    targets_per_night = eph_df_cut.groupby('night')['target'].agg(set)
+    nights_only_moon = targets_per_night[
+        targets_per_night.apply(lambda s: s == {'Moon'})
+    ].index
+
+    # Combine all nights to drop
+    nights_to_drop = set(nights_only_moon) | nights_with_zero_targets
+
+    # Drop those nights from both DataFrames
+    old_length = len(twilight_times)
+    twilight_times = twilight_times[~twilight_times['night'].isin(nights_to_drop)]
+    eph_df_cut = eph_df_cut[~eph_df_cut['night'].isin(nights_to_drop)]
+    logger.debug(f'Twilight times reduced from {old_length} to {len(twilight_times)} days')
+
+    return eph_df_cut, twilight_times
 
 
 def get_twilight_times(mpc_code:str, date_list:list[Time]) -> dict[datetime.datetime]:
@@ -198,17 +223,21 @@ def get_twilight_times(mpc_code:str, date_list:list[Time]) -> dict[datetime.date
         sunset        = MPC_site.next_setting(ephem.Sun())
         MPC_site.date = sunset
         sunrise       = MPC_site.next_rising(ephem.Sun())
-                
+        
         night_info['sun_set']  = sunset.datetime()
         night_info['sun_rise'] = sunrise.datetime()
         
         for name, angle in twilight_definitions.items():
-                        
-            MPC_site.horizon = angle
-            twilight_set  = MPC_site.next_setting(ephem.Sun(), use_center=True)
-            twilight_rise = MPC_site.next_rising(ephem.Sun(), use_center=True)
-            night_info[f'{name}_set']  = twilight_set.datetime()
-            night_info[f'{name}_rise'] = twilight_rise.datetime()
+            
+            try: # Might fail if the sun never goes below this point
+                MPC_site.horizon = angle
+                twilight_set  = MPC_site.next_setting(ephem.Sun(), use_center=True)
+                twilight_rise = MPC_site.next_rising(ephem.Sun(), use_center=True)
+                night_info[f'{name}_set']  = twilight_set.datetime()
+                night_info[f'{name}_rise'] = twilight_rise.datetime()
+            except (ephem.AlwaysUpError, ephem.NeverUpError):
+                night_info[f'{name}_set'] = None
+                night_info[f'{name}_rise'] = None
 
         all_night_info.append(night_info)
 

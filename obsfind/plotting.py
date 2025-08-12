@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import itertools
+import matplotlib.dates as mdates
+from .outfmt import logger
 
 def marker_list(target_names):
     """
@@ -68,6 +70,12 @@ def elevation_chart(twilight_times, eph_night, target_plot_info, elevation_limit
                             label=obj, ax=ax,
                             marker=marker, color=colour, markersize=8)
     
+    #Check if times actually exist (Won't if never sets)
+    set_list = ['sun_set', 'civil_set', 'nautical_set', 'astronomical_set']
+    twilight_times[set_list] = twilight_times[set_list].apply(pd.to_datetime).ffill()
+    rise_list = ['sun_rise', 'civil_rise', 'nautical_rise', 'astronomical_rise']
+    twilight_times[rise_list] = twilight_times[rise_list].apply(pd.to_datetime).ffill()
+
     # Format plot
     ax.axvspan(twilight_times['sun_set'].isoformat(), twilight_times['civil_set'].isoformat(), alpha=.30)
     ax.axvspan(twilight_times['civil_set'].isoformat(), twilight_times['nautical_set'].isoformat(), alpha=.20)
@@ -104,3 +112,96 @@ def elevation_chart(twilight_times, eph_night, target_plot_info, elevation_limit
     plt.close()
 
     return
+
+
+
+def summary_chart(night_summaries,target_plot_info,target=False,fig_path='./temp_summary'):
+    """
+    Creates and saves a multi-panel summary chart for one or more targets.
+
+    Inputs
+        night_summaries  : DataFrame containing nightly summary data for each target,
+                        including columns such as 'datetime_str', 'duration_hours',
+                        'Mag', 'alpha', 'Sky_motion', 'RA', and 'DEC'.
+        target_plot_info : DataFrame mapping targets to plot colours and markers.
+                        Must contain 'targets', 'colours', and 'markers' columns.
+        target           : (optional) Specific target name to plot. If provided,
+                        only this target will be plotted; otherwise all targets
+                        in night_summaries are included.
+        fig_path         : Directory path to save the output figure PNG file.
+
+    Output
+        Saves a PNG image in fig_path containing:
+            - Six subplots showing time visible, rate of motion, magnitude, RA,
+            phase angle, and DEC as functions of date.
+            - For all-target plots: includes a legend above the subplots.
+            - For single-target plots: no legend is shown.
+    """
+    
+    #File names and plotting targets
+    if target:
+        targets_to_plot = [target]
+        file_name = f"summary_{target.replace(' ','').replace('C/','C')}"
+    else:
+        targets_to_plot = night_summaries['target'].unique()
+        file_name = "all_tar_summary"
+
+    #Create figure and plot
+    date_fmt = mdates.DateFormatter('%m-%d')
+    fig, axes = plt.subplots(nrows=3,ncols=2,figsize=(28,30))
+    for obj in targets_to_plot:
+        
+        tar_summary = night_summaries[night_summaries.target==obj]
+
+        # if obj == 'Moon':
+            # eph_night_tar.plot(x='datetime_str', y='elevation',
+                            # label='Moon', ax=ax,
+                            # linestyle='--', color='black', marker='', lw=7, alpha=0.75)
+        # else:
+        colour = target_plot_info[target_plot_info['targets']==obj]['colours'].values[0]
+        marker = target_plot_info[target_plot_info['targets']==obj]['markers'].values[0]
+        
+        step = 3
+        date = tar_summary['datetime_str'][::step]
+        axes[0,0].plot(date, tar_summary.duration_hours[::step],   label=obj, marker=marker, color=colour, linewidth=4, markersize=15)
+        axes[1,0].plot(date, tar_summary.Mag[::step],       label=obj, marker=marker, color=colour, linewidth=4, markersize=15)
+        axes[2,0].plot(date, tar_summary.alpha[::step],   label=obj, marker=marker, color=colour, linewidth=4, markersize=15)
+        axes[0,1].plot(date, tar_summary.Sky_motion[::step],    label=obj, marker=marker, color=colour, linewidth=4, markersize=15)
+        axes[1,1].plot(date, tar_summary.RA[::step],  label=obj, marker=marker, color=colour, linewidth=4, markersize=15)
+        axes[2,1].plot(date, tar_summary.DEC[::step], label=obj, marker=marker, color=colour, linewidth=4, markersize=15)
+
+    #Format plot
+    ylabels = [ 'Time visible / Hours',
+                'Rate of motion / arcsec per min',
+                'Estimated magnitude (V/Tmag)',
+                'Apparent RA / degrees',
+                'Phase angle / degrees',
+                'Apparent DEC / degrees']
+    for ax, ylab in zip(axes.flatten(),ylabels):
+        ax.xaxis.set_major_formatter(date_fmt)
+        
+        for spn in ax.spines: #Black edges
+            ax.spines[spn].set_linewidth(5)
+            ax.spines[spn].set_color('black')
+
+        # ax.xaxis.set_ticks(xticks)
+        ax.xaxis.set_ticks_position('both')
+        ax.yaxis.set_ticks_position('both')
+        ax.xaxis.set_tick_params(direction='in', labelsize=30, which='both',color='black',length=10,width=5)
+        ax.yaxis.set_tick_params(direction='in', labelsize=30, which='both',color='black',length=10,width=5)
+        ax.set_ylabel(f'{ylab}',fontsize=30,labelpad=10)
+        ax.grid(which='both',axis='both')
+        plt.gca().invert_yaxis()
+        plt.tight_layout()
+        
+    axes[2,0].set_xlabel('Date',fontsize=30,labelpad=10)
+    axes[2,1].set_xlabel('Date',fontsize=30,labelpad=10)
+
+    if not target: #Do not plot legend if individual target plot
+        fig.legend(np.unique(night_summaries['target']), loc='lower center', bbox_to_anchor=(0.5, 1.00), ncol=2,prop={'size':30})
+
+    fig.subplots_adjust(wspace=0.2, hspace=0.1)
+    fig.savefig(f'{fig_path}/{file_name}.png',bbox_inches='tight')
+    logger.debug(f'Saving {fig_path}/{file_name}.png')
+
+    plt.close()

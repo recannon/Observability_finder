@@ -18,7 +18,7 @@ def error_exit(message:str):
     logger.error(message)
     sys.exit(1)
 
-def df2csv(df,csv,base_name,file_name,contents):
+def df2csv(df,base_name,file_name,contents):
     # Save csv in output file
     output_path = Path(f'./{base_name}{file_name}').resolve()
     df.to_csv(output_path)
