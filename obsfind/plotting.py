@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import itertools
 import matplotlib.dates as mdates
+from .outfmt import logger
 
 def marker_list(target_names):
     """
@@ -167,11 +168,6 @@ def summary_chart(night_summaries,target_plot_info,target=False,fig_path='./temp
             ax.spines[spn].set_linewidth(5)
             ax.spines[spn].set_color('black')
 
-        # if len(df_summary_all.date_str) > 60:
-            # xticks = [date for date in np.unique(df_summary_all['date_str']) if date[-2:]=='01']
-        # else:
-            # xticks = np.unique(df_summary_all['date_str'])
-
         # ax.xaxis.set_ticks(xticks)
         ax.xaxis.set_ticks_position('both')
         ax.yaxis.set_ticks_position('both')
@@ -189,8 +185,7 @@ def summary_chart(night_summaries,target_plot_info,target=False,fig_path='./temp
         fig.legend(np.unique(night_summaries['target']), loc='lower center', bbox_to_anchor=(0.5, 1.00), ncol=2,prop={'size':30})
 
     fig.subplots_adjust(wspace=0.2, hspace=0.1)
-    # fig.savefig(f'{fig_path}/Nights-summary-png/{file_name}.png',bbox_inches='tight')
     fig.savefig(f'{fig_path}/{file_name}.png',bbox_inches='tight')
-
+    logger.debug(f'Saving {fig_path}/{file_name}.png')
 
     plt.close()

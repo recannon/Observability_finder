@@ -1,11 +1,11 @@
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Image, Table, TableStyle, Spacer
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Image, Table, TableStyle, Spacer, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from astropy.time import Time
 from .outfmt import logger
 
-def create_pdf(twilight_times,summary_df,mpc_code,pdf_path):
+def create_elevation_pdf(twilight_times,summary_df,mpc_code,pdf_path):
 
     """
     Creates a PDF with elevation chart and summary table for a given night.
@@ -30,7 +30,6 @@ def create_pdf(twilight_times,summary_df,mpc_code,pdf_path):
 
     # lunar_illum_val = summary_df['lunar_illum'].iloc[0] #They're all the same anyway
     lunar_illum_val = twilight_times['lunar_illum']
-
 
     doc = SimpleDocTemplate(pdf_name, pagesize=letter,
                             rightMargin=20, leftMargin=20,
@@ -120,3 +119,50 @@ def create_pdf(twilight_times,summary_df,mpc_code,pdf_path):
     story.append(table)
 
     doc.build(story)
+    
+    return
+
+def create_summary_pdf(pdf_name,tmpdir_path):
+    
+    doc = SimpleDocTemplate(str(pdf_name), pagesize=letter,
+                            rightMargin=20, leftMargin=20,
+                            topMargin=20, bottomMargin=20)
+
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        name="CenteredBold",
+        parent=styles["Heading1"],
+        alignment=1,  # 0=left, 1=center, 2=right
+        fontName="Helvetica-Bold"
+    )    
+    
+    story = []
+       
+    # All target summary pdf
+    all_target_summary = tmpdir_path / 'all_tar_summary.png'
+    
+    # At top of pdf
+    im = Image(all_target_summary)
+    im._restrictSize(doc.width,doc.height*0.9)
+    story.append(im)
+    story.append(PageBreak())
+    
+    # Then append all other targets
+    target_summaries = list(tmpdir_path.glob('summary_*'))
+    for i, fig in enumerate(target_summaries):
+        
+        obj_name = str(fig).split('_')[-1][:-4]
+
+        story.append(Paragraph(obj_name, title_style))
+        story.append(Spacer(1, 12))
+        im = Image(fig)
+        im._restrictSize(doc.width, doc.height*0.9)
+        story.append(im)
+
+        # Add page break except after last figure
+        if i < len(list(target_summaries)) - 1:
+            story.append(PageBreak())
+    
+    doc.build(story)
+
+    return

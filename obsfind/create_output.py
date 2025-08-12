@@ -1,5 +1,5 @@
-from .plotting import elevation_chart
-from .latex import create_pdf
+from .plotting import elevation_chart, summary_chart
+from .make_pdfs import create_elevation_pdf, create_summary_pdf
 import tempfile
 from pathlib import Path
 from pypdf import PdfWriter, PdfReader
@@ -57,7 +57,7 @@ def make_elevation_charts_pdf(eph_cut, twilight_list, target_plot_info, elevatio
                 # Makes fig for each night
                 elevation_chart(row,eph_night,target_plot_info,elevation_limit,show_plot=False,fig_path=tmpdir_path)
                 # Makes pdf for each night
-                create_pdf(row,summary_df,mpc_code,pdf_path=tmpdir_path)
+                create_elevation_pdf(row,summary_df,mpc_code,pdf_path=tmpdir_path)
 
                 pb.update(t1,advance=1)
     
@@ -119,3 +119,29 @@ def summarize_target(group,twilight_info=None,tar_name=None):
         'nght_stt'    : twilight_info['sun_set'],
         'nght_stp'    : twilight_info['sun_rise']
     })
+    
+def make_summary_charts_pdf(night_summaries, target_plot_info, base_out_name=''):
+    
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir_path = Path(tmpdir)
+    
+        #Summary for everything
+        summary_chart(night_summaries,target_plot_info,fig_path=tmpdir_path)
+    
+        with Progress(console=console, transient=True) as pb:
+            t1 = pb.add_task('Making summary plots', total=len(target_plot_info))
+            
+            #Summary chart per object
+            for obj in target_plot_info['targets']:
+                if obj=='Moon':
+                    continue
+                logger.debug(f'Processing summary for {obj}')
+                summary_chart(night_summaries,target_plot_info,target=obj,fig_path=tmpdir_path)
+                pb.update(t1, advance=1)
+        
+        #Create pdf
+        pdf_name = Path(f'./{base_out_name}summary.pdf')
+        create_summary_pdf(pdf_name,tmpdir_path)
+        logger.info(f"Summary charts saved to {pdf_name.resolve()}")
+
+    return
