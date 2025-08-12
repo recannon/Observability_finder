@@ -80,8 +80,8 @@ def create_pdf(twilight_times,summary_df,mpc_code,pdf_path):
         'target': '{}'          # string, no formatting
     }
 
-    columns = ['target', 'RA_str', 'DEC_str', 'Mag', 'Sky_motion', 'alpha', 'lunar_elong']
-    column_names = ['Target','RA','DEC','V/T-Mag','Sky Mot.', 'Alpha', 'T-O-M']
+    columns = ['target', 'duration_hours', 'RA_str', 'DEC_str', 'Mag', 'Sky_motion', 'alpha', 'lunar_elong']
+    column_names = ['Target', 'T-Vis', 'RA','DEC','V/T-Mag','Sky Mot.', 'Alpha', 'T-O-M']
     data = [column_names]  # header row
 
     for _, row in summary_df.iterrows():
